@@ -204,6 +204,104 @@ class NotificationService {
   }
 
   /**
+   * Send appointment notification to patient and doctor
+   * @param {Object} patient - Patient user object
+   * @param {Object} doctor - Doctor user object
+   * @param {Object} appointment - Appointment object
+   * @returns {Promise<Array>} Created notifications
+   */
+  async sendAppointmentNotification(patient, doctor, appointment) {
+    const notifications = [];
+    const appointmentDate = new Date(appointment.date);
+    const formattedDate = appointmentDate.toLocaleDateString();
+    const formattedTime = appointmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Notification for patient
+    const patientNotification = await this.sendTemplatedNotification({
+      templateName: 'appointment_scheduled',
+      user: patient,
+      variables: {
+        patientName: patient.name,
+        doctorName: doctor.name,
+        appointmentDate: formattedDate,
+        appointmentTime: formattedTime,
+        appointmentType: appointment.type,
+        reason: appointment.reason,
+        viewUrl: `${process.env.FRONTEND_URL}/appointments/${appointment._id}`
+      },
+      relatedTo: {
+        model: 'Appointment',
+        id: appointment._id
+      },
+      priority: 'medium'
+    });
+    
+    notifications.push(patientNotification);
+
+    // Notification for doctor
+    const doctorNotification = await this.sendTemplatedNotification({
+      templateName: 'new_appointment',
+      user: doctor,
+      variables: {
+        doctorName: doctor.name,
+        patientName: patient.name,
+        appointmentDate: formattedDate,
+        appointmentTime: formattedTime,
+        appointmentType: appointment.type,
+        reason: appointment.reason,
+        viewUrl: `${process.env.FRONTEND_URL}/doctor/appointments/${appointment._id}`
+      },
+      relatedTo: {
+        model: 'Appointment',
+        id: appointment._id
+      },
+      priority: 'medium'
+    });
+    
+    notifications.push(doctorNotification);
+
+    return notifications;
+  }
+
+  /**
+   * Send appointment update notification
+   * @param {Object} patient - Patient user object
+   * @param {Object} doctor - Doctor user object
+   * @param {Object} appointment - Appointment object
+   * @param {String} updatedBy - Role of the user who made the update
+   * @returns {Promise<Object>} Created notification
+   */
+  async sendAppointmentUpdateNotification(patient, doctor, appointment, updatedBy) {
+    const appointmentDate = new Date(appointment.date);
+    const formattedDate = appointmentDate.toLocaleDateString();
+    const formattedTime = appointmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Determine who to notify based on who made the update
+    const userToNotify = updatedBy === 'doctor' ? patient : doctor;
+    const updatedByName = updatedBy === 'doctor' ? doctor.name : patient.name;
+    
+    return await this.sendTemplatedNotification({
+      templateName: 'appointment_status_changed',
+      user: userToNotify,
+      variables: {
+        userName: userToNotify.name,
+        appointmentDate: formattedDate,
+        appointmentTime: formattedTime,
+        newStatus: appointment.status,
+        updatedBy: updatedByName,
+        viewUrl: updatedBy === 'doctor' 
+          ? `${process.env.FRONTEND_URL}/appointments/${appointment._id}`
+          : `${process.env.FRONTEND_URL}/doctor/appointments/${appointment._id}`
+      },
+      relatedTo: {
+        model: 'Appointment',
+        id: appointment._id
+      },
+      priority: appointment.status === 'cancelled' ? 'high' : 'medium'
+    });
+  }
+
+  /**
    * Mark notification as read
    * @param {string} notificationId - Notification ID
    * @param {string} userId - User ID

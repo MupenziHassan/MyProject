@@ -1,26 +1,31 @@
 {
-  "name": "healthcare-prediction-api",
+  "name": "health-prediction-system-backend",
   "version": "1.0.0",
-  "description": "Backend API for healthcare prediction system",
-  "main": "src/server.js",
+  "description": "Backend API for Health Prediction System",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "jest"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node src/seeder.js"
   },
   "dependencies": {
+    "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "express-validator": "^7.0.1",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.3",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.1.4",
+    "helmet": "^7.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.1",
     "morgan": "^1.10.0",
-    "nodemailer": "^6.9.1"
+    "nodemailer": "^6.9.7",
+    "twilio": "^4.19.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "jest": "^29.5.0",
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.0.1"
   }
 }

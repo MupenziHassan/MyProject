@@ -1,0 +1,12 @@
+{
+  "name": "health-prediction-system",
+  "version": "1.0.0",
+  "description": "Complete Health Prediction System with ML Integration",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start": "node run-system.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
