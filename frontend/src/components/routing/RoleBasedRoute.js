@@ -1,26 +1,23 @@
 import React, { useContext } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const RoleBasedRoute = ({ allowedRoles }) => {
+const RoleBasedRoute = ({ children, allowedRoles }) => {
   const { currentUser, loading } = useContext(AuthContext);
-
-  // Show loading spinner while checking authentication
+  
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
-
-  // If not authenticated, redirect to login
+  
   if (!currentUser) {
     return <Navigate to="/login" />;
   }
-
-  // Check if user role is allowed
+  
   if (!allowedRoles.includes(currentUser.role)) {
-    return <Navigate to="/unauthorized" />;
+    return <Navigate to="/dashboard" />;
   }
-
-  return <Outlet />;
+  
+  return children;
 };
 
 export default RoleBasedRoute;

@@ -1,5 +1,28 @@
-// ...existing code...
-        // Check if doctor is verified
+const User = require('../models/User');
+const Patient = require('../models/Patient');
+const Doctor = require('../models/Doctor');
+const Appointment = require('../models/Appointment');
+const Test = require('../models/Test');
+const Prediction = require('../models/Prediction');
+
+/**
+ * Middleware to check if user has specific clinical permissions
+ */
+const checkPermission = (requiredPermissions) => {
+  return async (req, res, next) => {
+    try {
+      // Convert to array if string
+      const permissions = typeof requiredPermissions === 'string' ? [requiredPermissions] : requiredPermissions;
+      
+      // Skip permission check if no permissions required or user is admin
+      if (!permissions || permissions.length === 0 || (req.user && req.user.role === 'admin')) {
+        return next();
+      }
+      
+      // Check if doctor is verified
+      if (req.user.role === 'doctor') {
+        const doctor = await Doctor.findOne({ user: req.user.id });
+        
         if (!doctor || !doctor.isVerified) {
           return res.status(403).json({
             success: false,
@@ -51,7 +74,6 @@
       // Add permissions to request object for potential use in controllers
       req.permissions = userPermissions;
       next();
-      
     } catch (err) {
       console.error('Permission check error:', err);
       return res.status(500).json({

@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
 const sendEmail = require('../utils/sendEmail');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -46,38 +48,63 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
+    
     // Validate email & password
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide email and password',
+        error: 'Please provide an email and password'
       });
     }
-
-    // Check for user
+    
+    // Check for user - explicitly select password field
     const user = await User.findOne({ email }).select('+password');
-
+    
     if (!user) {
+      console.log(`Login failed: No user found with email ${email}`);
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials',
+        error: 'Invalid credentials'
       });
     }
-
+    
     // Check if password matches
-    const isMatch = await user.matchPassword(password);
-
+    const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
+      console.log(`Login failed: Password incorrect for ${email}`);
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials',
+        error: 'Invalid credentials'
       });
     }
-
-    sendTokenResponse(user, 200, res);
+    
+    // Create token
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET || 'fallback-jwt-secret-for-dev',
+      { expiresIn: process.env.JWT_EXPIRE || '30d' }
+    );
+    
+    // Remove password from response
+    user.password = undefined;
+    
+    res.status(200).json({
+      success: true,
+      token,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (err) {
-    next(err);
+    console.error('Login error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Server error during login'
+    });
   }
 };
 

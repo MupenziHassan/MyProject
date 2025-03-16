@@ -17,7 +17,7 @@ const AppointmentsList = () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/v1/appointments/patient');
-      setAppointments(res.data.data);
+      setAppointments(res.data.data || []);
       setLoading(false);
     } catch (err) {
       setError('Failed to load appointments');
@@ -26,7 +26,8 @@ const AppointmentsList = () => {
   };
 
   const handleCancelAppointment = async (appointmentId) => {
-    if (!confirm('Are you sure you want to cancel this appointment?')) {
+    // Use window.confirm instead of confirm to avoid namespace collisions
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) {
       return;
     }
     
@@ -40,16 +41,23 @@ const AppointmentsList = () => {
 
   // Filter appointments based on active tab
   const filteredAppointments = appointments.filter(appointment => {
-    const appointmentDate = parseISO(appointment.date);
+    if (!appointment.date) return false;
     
-    if (activeTab === 'upcoming') {
-      return !isPast(appointmentDate) || isToday(appointmentDate);
-    } else if (activeTab === 'past') {
-      return isPast(appointmentDate) && !isToday(appointmentDate);
-    } else if (activeTab === 'cancelled') {
-      return appointment.status === 'cancelled';
+    try {
+      const appointmentDate = parseISO(appointment.date);
+      
+      if (activeTab === 'upcoming') {
+        return !isPast(appointmentDate) || isToday(appointmentDate);
+      } else if (activeTab === 'past') {
+        return isPast(appointmentDate) && !isToday(appointmentDate);
+      } else if (activeTab === 'cancelled') {
+        return appointment.status === 'cancelled';
+      }
+      return true;
+    } catch (error) {
+      console.error('Invalid date format:', appointment.date);
+      return false;
     }
-    return true;
   });
 
   if (loading) return <div className="loading-spinner"></div>;

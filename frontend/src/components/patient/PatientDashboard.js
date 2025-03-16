@@ -4,9 +4,18 @@ import axios from 'axios';
 import { AuthContext } from '../../contexts/AuthContext';
 import PatientTimeline from '../shared/PatientTimeline';
 import PredictionVisualizer from '../shared/PredictionVisualizer';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const PatientDashboard = () => {
-  // ...existing code...
+  const { currentUser } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [dashboardData, setDashboardData] = useState({
+    recentTests: [],
+    predictions: [],
+    appointments: [],
+    notifications: []
+  });
 
   // Format timeline events from various sources
   const timelineEvents = [
@@ -46,10 +55,10 @@ const PatientDashboard = () => {
 
   // Safe date formatting function
   const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
     try {
       const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return 'Invalid date';
-      return date.toLocaleDateString();
+      return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
     } catch (error) {
       return 'Invalid date';
     }
@@ -65,7 +74,7 @@ const PatientDashboard = () => {
     }
   };
 
-  if (loading) return <div className="loading-container"><div className="loading-spinner"></div><p>Loading dashboard...</p></div>;
+  if (loading) return <LoadingSpinner message="Loading dashboard..." />;
   
   return (
     <div className="patient-dashboard">

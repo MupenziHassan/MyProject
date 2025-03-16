@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
+import axios from 'axios';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor }) => {
   const [stream, setStream] = useState(null);
@@ -9,6 +11,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor }) => 
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
+  const [error, setError] = useState('');
   
   const myVideo = useRef();
   const userVideo = useRef();
@@ -17,31 +20,68 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor }) => 
 
   // Initialize WebRTC connection
   useEffect(() => {
-    // Request camera & mic permissions
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then((currentStream) => {
+    if (!appointmentId) {
+      setError('Appointment ID is required to start a consultation');
+      return;
+    }
+
+    const setupCall = async () => {
+      try {
+        // Request camera & mic permissions
+        const currentStream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: true 
+        });
+        
         setStream(currentStream);
+        
         if (myVideo.current) {
           myVideo.current.srcObject = currentStream;
         }
-      });
 
-    // Connect to signaling server
-    socketRef.current = io(process.env.REACT_APP_SOCKET_SERVER);
+        // Connect to signaling server
+        socketRef.current = io(process.env.REACT_APP_SOCKET_SERVER || 'http://localhost:5000');
+        
+        // Room setup based on appointment
+        socketRef.current.emit('join-room', appointmentId);
+        
+        // Socket event handlers
+        socketRef.current.on('user-connected', userId => {
+          // Handle new user joined
+        });
+        
+        socketRef.current.on('user-disconnected', userId => {
+          // Handle user left
+        });
+        
+        socketRef.current.on('call-user', data => {
+          setReceivingCall(true);
+          setCaller(data.from);
+          setCallerSignal(data.signal);
+        });
+        
+      } catch (err) {
+        setError(`Failed to access camera and microphone: ${err.message}`);
+      }
+    };
     
-    // Initialize socket connection
-    // ...existing code...
+    setupCall();
     
     return () => {
-      // Clean up
+      // Clean up resources on unmount
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
+      
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
     };
-  }, []);
+  }, [appointmentId]);
 
   // Call functions
   const callUser = () => {
@@ -61,6 +101,9 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor }) => 
 
   return (
     <div className="video-consultation">
+      {error && <div className="error-message">{error}</div>}
+      {!stream && !error && <LoadingSpinner message="Setting up video connection..." />}
+      
       <h2>Video Consultation</h2>
       
       <div className="video-container">

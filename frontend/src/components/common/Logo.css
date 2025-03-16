@@ -1,0 +1,72 @@
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.logo-symbol {
+  color: white;
+  font-size: 24px;
+}
+
+.logo-text h1 {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.logo-text h1 span {
+  color: var(--primary-color);
+}
+
+.logo-tagline {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* White variant for dark backgrounds */
+.logo-white .logo-text h1 {
+  color: #ffffff;
+}
+
+.logo-white .logo-tagline {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Compact variant */
+.logo-compact .logo-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.logo-compact .logo-symbol {
+  font-size: 18px;
+}
+
+.logo-compact .logo-text h1 {
+  font-size: 1.2rem;
+}
+
+.logo-compact .logo-tagline {
+  font-size: 0.75rem;
+}

@@ -1,0 +1,156 @@
+name: Health Prediction System CI/CD
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:4.4
+        ports:
+          - 27017:27017
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          echo "Installing backend dependencies"
+          cd backend
+          npm ci
+          echo "Installing frontend dependencies"
+          cd ../frontend
+          npm ci
+          
+      - name: Run ESLint
+        run: |
+          cd backend
+          npm run lint
+          cd ../frontend
+          npm run lint
+          
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test -- --coverage
+        env:
+          NODE_ENV: test
+          MONGO_URI_TEST: mongodb://localhost:27017/health-prediction-test
+          JWT_SECRET: test-jwt-secret
+          
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test -- --coverage
+          
+      - name: Upload test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
+  build:
+    name: Build
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          
+      - name: Install dependencies and build
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/build
+          
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/development'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.health-prediction.rw
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/build
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Deploy backend to staging
+        run: |
+          scp -o StrictHostKeyChecking=no -r backend/* ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_HOST }}:~/health-prediction/backend/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_HOST }} 'cd ~/health-prediction/backend && npm ci && pm2 restart health-api || pm2 start src/server.js --name health-api'
+          
+      - name: Deploy frontend to staging
+        run: |
+          scp -o StrictHostKeyChecking=no -r frontend/build/* ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_HOST }}:~/health-prediction/frontend/
+          
+  deploy-production:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://health-prediction.rw
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/build
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Deploy backend to production
+        run: |
+          scp -o StrictHostKeyChecking=no -r backend/* ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_HOST }}:~/health-prediction/backend/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_HOST }} 'cd ~/health-prediction/backend && npm ci && pm2 restart health-api || pm2 start src/server.js --name health-api'
+          
+      - name: Deploy frontend to production
+        run: |
+          scp -o StrictHostKeyChecking=no -r frontend/build/* ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_HOST }}:~/health-prediction/frontend/

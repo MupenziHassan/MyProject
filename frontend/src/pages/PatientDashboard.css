@@ -1,0 +1,92 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-gap: var(--space-6);
+  margin: var(--space-8) 0;
+}
+
+.dashboard-header {
+  grid-column: span 12;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.dashboard-header h2 {
+  font-size: var(--font-3xl);
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0;
+}
+
+.dashboard-welcome {
+  font-size: var(--font-lg);
+  color: var(--text-secondary);
+}
+
+.metrics-cards {
+  grid-column: span 12;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.recent-activity {
+  grid-column: span 8;
+}
+
+.upcoming-appointments {
+  grid-column: span 4;
+}
+
+.health-charts {
+  grid-column: span 6;
+}
+
+.notifications-panel {
+  grid-column: span 6;
+}
+
+.recommendations {
+  grid-column: span 12;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .metrics-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+  
+  .health-charts,
+  .notifications-panel {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-gap: var(--space-4);
+  }
+  
+  .recent-activity,
+  .upcoming-appointments {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dashboard-welcome {
+    margin-top: var(--space-2);
+  }
+}

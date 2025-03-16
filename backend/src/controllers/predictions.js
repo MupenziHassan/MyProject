@@ -1,9 +1,21 @@
-const ModelVersion = require('../models/ModelVersion');
-const Prediction = require('../models/Prediction');
-const Patient = require('../models/Patient');
+// Import dependencies with graceful handling
 const User = require('../models/User');
+const Patient = require('../models/Patient');
+const Prediction = require('../models/Prediction');
+let NotificationService;
+
+try {
+  NotificationService = require('../services/NotificationService');
+} catch (error) {
+  console.warn('NotificationService not available:', error.message);
+  // Create a mock notification service
+  NotificationService = {
+    sendPredictionNotification: () => Promise.resolve({ success: false })
+  };
+}
+
+const ModelVersion = require('../models/ModelVersion');
 const MLService = require('../services/MachineLearningService');
-const notificationService = require('../services/NotificationService');
 
 // @desc    Process cancer prediction request
 // @route   POST /api/v1/predictions/cancer
@@ -48,7 +60,7 @@ exports.processCancerPrediction = async (req, res, next) => {
     });
     
     // Send notification to patient
-    await notificationService.sendPredictionNotification(
+    await NotificationService.sendPredictionNotification(
       patientUser,
       prediction,
       req.user // doctor

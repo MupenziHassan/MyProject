@@ -1,190 +1,87 @@
-import React, { createContext, useReducer, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import setAuthToken from '../utils/setAuthToken';
 
-// Create context
 export const AuthContext = createContext();
 
-// Initial state
-const initialState = {
-  token: localStorage.getItem('token'),
-  currentUser: null,
-  isAuthenticated: null,
-  loading: true,
-  error: null
-};
-
-// Reducer function
-const authReducer = (state, action) => {
-  switch (action.type) {
-    case 'USER_LOADED':
-      return {
-        ...state,
-        isAuthenticated: true,
-        loading: false,
-        currentUser: action.payload
-      };
-    case 'LOGIN_SUCCESS':
-    case 'REGISTER_SUCCESS':
-      localStorage.setItem('token', action.payload.token);
-      return {
-        ...state,
-        ...action.payload,
-        isAuthenticated: true,
-        loading: false,
-        error: null
-      };
-    case 'AUTH_ERROR':
-    case 'LOGIN_FAIL':
-    case 'REGISTER_FAIL':
-    case 'LOGOUT':
-      localStorage.removeItem('token');
-      return {
-        ...state,
-        token: null,
-        isAuthenticated: false,
-        loading: false,
-        currentUser: null,
-        error: action.payload
-      };
-    case 'CLEAR_ERROR':
-      return {
-        ...state,
-        error: null
-      };
-    default:
-      return state;
-  }
-};
-
-// Provider component
 export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Load user data if token exists
+  // Check if user is already logged in (via token)
   useEffect(() => {
     const loadUser = async () => {
-      if (localStorage.token) {
-        setAuthToken(localStorage.token);
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        setAuthToken(token);
+        try {
+          const res = await axios.get('/api/v1/auth/me');
+          setCurrentUser(res.data.data);
+        } catch (err) {
+          // Token is invalid or expired
+          localStorage.removeItem('token');
+          setAuthToken(null);
+        }
       }
-
-      try {
-        const res = await axios.get('/api/v1/auth/me');
-
-        dispatch({
-          type: 'USER_LOADED',
-          payload: res.data.data
-        });
-      } catch (err) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response?.data?.error || 'Authentication error'
-        });
-      }
+      
+      setLoading(false);
     };
 
     loadUser();
   }, []);
 
-  // Register user
-  const register = async (formData) => {
-    try {
-      const res = await axios.post('/api/v1/auth/register', formData);
-
-      dispatch({
-        type: 'REGISTER_SUCCESS',
-        payload: res.data
-      });
-
-      return true;
-    } catch (err) {
-      dispatch({
-        type: 'REGISTER_FAIL',
-        payload: err.response?.data?.error || 'Registration failed'
-      });
-      return false;
-    }
-  };
-
-  // Login user
+  // Login function
   const login = async (email, password) => {
     try {
-      const res = await axios.post('/api/v1/auth/login', {
-        email,
-        password
-      });
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: res.data
-      });
-
-      return true;
+      const res = await axios.post('http://localhost:5001/api/v1/auth/login', { email, password });
+      
+      // Set token in local storage
+      localStorage.setItem('token', res.data.token);
+      
+      // Set token in auth header
+      setAuthToken(res.data.token);
+      
+      // Set user in state
+      setCurrentUser(res.data.data);
+      
+      return res.data.data;
     } catch (err) {
-      dispatch({
-        type: 'LOGIN_FAIL',
-        payload: err.response?.data?.error || 'Invalid credentials'
-      });
-      return false;
+      setError(err.response?.data?.error || 'Login failed');
+      throw err;
     }
   };
 
-  // Logout
+  // Logout function
   const logout = () => {
-    dispatch({ type: 'LOGOUT' });
+    // Remove token
+    localStorage.removeItem('token');
+    setAuthToken(null);
+    setCurrentUser(null);
   };
-
-  // Clear Errors
-  const clearError = () => dispatch({ type: 'CLEAR_ERROR' });
-
-  // Forgot password
-  const forgotPassword = async (email) => {
+  
+  // Register function
+  const register = async (userData) => {
     try {
-      await axios.post('/api/v1/auth/forgotpassword', { email });
-      clearError();
-      return true;
+      const res = await axios.post('/api/v1/auth/register', userData);
+      return res.data;
     } catch (err) {
-      dispatch({
-        type: 'AUTH_ERROR',
-        payload: err.response?.data?.error || 'Password reset failed'
-      });
-      return false;
-    }
-  };
-
-  // Reset password
-  const resetPassword = async (resetToken, password) => {
-    try {
-      await axios.put(`/api/v1/auth/resetpassword/${resetToken}`, {
-        password
-      });
-      clearError();
-      return true;
-    } catch (err) {
-      dispatch({
-        type: 'AUTH_ERROR',
-        payload: err.response?.data?.error || 'Password reset failed'
-      });
-      return false;
+      setError(err.response?.data?.error || 'Registration failed');
+      throw err;
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        token: state.token,
-        currentUser: state.currentUser,
-        isAuthenticated: state.isAuthenticated,
-        loading: state.loading,
-        error: state.error,
-        register,
-        login,
-        logout,
-        clearError,
-        forgotPassword,
-        resetPassword
-      }}
-    >
+    <AuthContext.Provider value={{ 
+      currentUser, 
+      loading, 
+      error, 
+      login, 
+      logout, 
+      register, 
+      setCurrentUser 
+    }}>
       {children}
     </AuthContext.Provider>
   );

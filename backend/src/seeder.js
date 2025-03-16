@@ -18,6 +18,13 @@ mongoose.connect(process.env.MONGO_URI);
 // Create sample data
 const createUsers = async () => {
   try {
+    // Clear existing data
+    await User.deleteMany();
+    await Doctor.deleteMany();
+    await Patient.deleteMany();
+    await ModelVersion.deleteMany();
+    await NotificationTemplate.deleteMany();
+    
     // Create admin user
     const adminPassword = await bcrypt.hash('admin123', 10);
     const admin = await User.create({

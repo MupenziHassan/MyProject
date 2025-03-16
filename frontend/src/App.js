@@ -1,68 +1,73 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-
-// Auth Components
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import ForgotPassword from './components/auth/ForgotPassword';
-import ResetPassword from './components/auth/ResetPassword';
-import PrivateRoute from './components/routing/PrivateRoute';
-import RoleBasedRoute from './components/routing/RoleBasedRoute';
+import React, { useContext } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext } from './contexts/AuthContext';
 
 // Pages
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import Unauthorized from './pages/Unauthorized';
+import NotFound from './pages/NotFound';
 
-// Layouts and other components
-import Navbar from './components/layout/Navbar';
+// Components
+import ProtectedRoute from './components/routing/ProtectedRoute';
+import RoleBasedRoute from './components/routing/RoleBasedRoute';
+import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
-
 import './App.css';
 
-function App() {
+const App = () => {
+  const { currentUser, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <div className="app-loading">Loading...</div>;
+  }
+
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <main className="container">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
-
-              {/* Private routes */}
-              <Route element={<PrivateRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-              </Route>
-
-              {/* Role-based routes */}
-              <Route element={<RoleBasedRoute allowedRoles={['patient']} />}>
-                <Route path="/patient-dashboard" element={<PatientDashboard />} />
-              </Route>
-
-              <Route element={<RoleBasedRoute allowedRoles={['doctor']} />}>
-                <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-              </Route>
-
-              <Route element={<RoleBasedRoute allowedRoles={['admin']} />}>
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              </Route>
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </AuthProvider>
+    <div className="app">
+      <Header />
+      <main className="main-content">
+        <Routes>
+          <Route path="/login" element={
+            currentUser ? <Navigate to="/dashboard" /> : <Login />
+          } />
+          <Route path="/register" element={
+            currentUser ? <Navigate to="/dashboard" /> : <Register />
+          } />
+          
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/patient/*" element={
+            <RoleBasedRoute allowedRoles={['patient']}>
+              <PatientDashboard />
+            </RoleBasedRoute>
+          } />
+          
+          <Route path="/doctor/*" element={
+            <RoleBasedRoute allowedRoles={['doctor']}>
+              <DoctorDashboard />
+            </RoleBasedRoute>
+          } />
+          
+          <Route path="/admin/*" element={
+            <RoleBasedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+            </RoleBasedRoute>
+          } />
+          
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   );
-}
+};
 
 export default App;
