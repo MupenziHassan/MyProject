@@ -1,0 +1,490 @@
+.health-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.health-summary {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.last-update {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  background-color: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--neutral-100);
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+}
+
+.card-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.card-footer {
+  padding: 1rem 1.5rem;
+  background-color: var(--neutral-50);
+  border-top: 1px solid var(--neutral-100);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-link {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.card-link:hover {
+  text-decoration: underline;
+}
+
+/* Health Metrics Card */
+.health-metrics-card .metric-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.health-metrics-card .metric-selector button {
+  padding: 0.4rem 0.75rem;
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.health-metrics-card .metric-selector button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.metric-display {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.metric-value-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.metric-value .metric-main-value,
+.blood-pressure-display .metric-main-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.metric-unit {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.metric-history-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: auto;
+}
+
+.metric-history-chart {
+  flex: 2;
+}
+
+.chart-placeholder {
+  height: 120px;
+  background-color: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.chart-bar {
+  flex: 1;
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius-sm);
+}
+
+.metric-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.metric-info-item {
+  font-size: 0.9rem;
+}
+
+.info-label {
+  color: var(--text-tertiary);
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.trend-stable {
+  color: var(--info-dark);
+}
+
+.trend-increasing {
+  color: var(--success-dark);
+}
+
+.trend-decreasing {
+  color: var(--danger-dark);
+}
+
+/* Risk Assessment Card */
+.risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.risk-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+}
+
+.risk-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.risk-details {
+  display: flex;
+  gap: 1rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.risk-level-container {
+  text-align: right;
+}
+
+.risk-level {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.risk-probability {
+  margin-top: 0.5rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Appointments Card */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointment-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+}
+
+.appointment-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.date-badge .month {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.date-badge .day {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.appointment-date .time {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+.appointment-details h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.appointment-type {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Test Results Card */
+.test-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.test-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+}
+
+.test-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.test-details {
+  display: flex;
+  gap: 1rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+
+.test-status {
+  text-align: right;
+}
+
+.status-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-indicator.normal {
+  background-color: var(--success-light);
+  color: var(--success-dark);
+}
+
+.status-indicator.abnormal {
+  background-color: var(--warning-light);
+  color: var(--warning-dark);
+}
+
+.status-indicator.critical {
+  background-color: var(--danger-light);
+  color: var(--danger-dark);
+}
+
+.status-indicator.pending {
+  background-color: var(--neutral-200);
+  color: var(--text-tertiary);
+}
+
+.view-details {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.view-details:hover {
+  text-decoration: underline;
+}
+
+/* Risk Factors Card */
+.risk-factors-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.risk-factors-chart {
+  margin-bottom: 1.5rem;
+}
+
+.risk-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.risk-factor-bar {
+  height: 30px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  color: white;
+  font-size: 0.85rem;
+  min-width: 20%;
+  transition: width 0.5s ease-in-out;
+}
+
+.risk-summary {
+  margin-top: auto;
+}
+
+.summary-heading {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.action-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action-items li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.action-items li i {
+  color: var(--primary-color);
+}
+
+/* No data states */
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  padding: 2rem;
+}
+
+.no-data p {
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .metric-history-container {
+    flex-direction: column;
+  }
+  
+  .risk-item,
+  .test-result-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .risk-level-container,
+  .test-status {
+    margin-top: 1rem;
+    text-align: left;
+  }
+}

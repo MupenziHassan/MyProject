@@ -1,0 +1,151 @@
+.appointment-details-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.details-header h1 {
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.status-badge-lg {
+  padding: 0.5rem 1.25rem;
+  border-radius: 2rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  font-size: 1rem;
+}
+
+.status-badge-lg-scheduled {
+  background-color: var(--info-light);
+  color: var(--info-dark);
+}
+
+.status-badge-lg-confirmed {
+  background-color: var(--success-light);
+  color: var(--success-dark);
+}
+
+.status-badge-lg-completed {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.status-badge-lg-cancelled {
+  background-color: var(--danger-light);
+  color: var(--danger-dark);
+}
+
+.status-badge-lg-no-show {
+  background-color: var(--neutral-200);
+  color: var(--text-tertiary);
+}
+
+.details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.details-card {
+  background-color: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.details-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--neutral-100);
+  padding-bottom: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.detail-label {
+  width: 140px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.appointment-type {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+}
+
+.doctor-notes {
+  background-color: var(--neutral-50);
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.details-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.error-container, .not-found-container {
+  text-align: center;
+  padding: 2rem;
+  background-color: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-top: 2rem;
+}
+
+.error-message, .not-found-message {
+  color: var(--danger-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+  }
+  
+  .detail-label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .details-actions {
+    flex-direction: column;
+  }
+  
+  .details-actions button, .details-actions a {
+    width: 100%;
+  }
+}

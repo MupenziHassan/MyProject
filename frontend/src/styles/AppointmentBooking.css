@@ -1,0 +1,311 @@
+.appointment-booking-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.booking-header h2 {
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.doctor-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.doctor-details h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.2rem;
+}
+
+.doctor-details p.specialization {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.form-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+}
+
+.form-section h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Doctor selection styles */
+.doctor-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.filter-toggles {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.toggle-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.doctors-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.doctor-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.doctor-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.doctor-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+.doctor-card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.doctor-card-info h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.doctor-card-info p {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.experience-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Date picker styles */
+.appointment-calendar {
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border: none;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+}
+
+.react-datepicker__month-container {
+  width: 100%;
+}
+
+.react-datepicker__header {
+  background-color: var(--primary-color);
+  border: none;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: white;
+}
+
+/* Time slots styles */
+.time-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.time-slot {
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.time-slot:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.time-slot.selected {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+/* Prompts and empty states */
+.select-doctor-prompt,
+.select-date-prompt,
+.no-slots,
+.no-availability,
+.no-doctors {
+  text-align: center;
+  padding: 2rem 1rem;
+  background-color: var(--neutral-100);
+  border-radius: var(--border-radius-md);
+  color: var(--text-secondary);
+}
+
+.select-doctor-prompt i,
+.select-date-prompt i,
+.no-slots i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-tertiary);
+}
+
+/* Symptoms tags */
+.symptoms-input-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.symptoms-input-container .form-control {
+  flex: 1;
+}
+
+.symptoms-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.symptom-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: 1rem;
+  font-size: 0.9rem;
+}
+
+.remove-symptom {
+  background: none;
+  border: none;
+  color: var(--primary-dark);
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .booking-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .doctor-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .doctors-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-slots {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}

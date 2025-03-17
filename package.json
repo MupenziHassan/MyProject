@@ -1,10 +1,15 @@
 {
   "name": "health-prediction-system",
   "version": "1.0.0",
-  "description": "Health prediction system with React frontend and Node.js backend",
-  "main": "run-system.js",
+  "description": "Health prediction system for university project",
+  "main": "index.js",
   "scripts": {
-    "start": "node run-system.js",
+    "start": "node backend/server.js",
+    "server": "nodemon backend/server.js",
+    "mock-server": "nodemon backend/config/mockBackend.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "mock-dev": "concurrently \"npm run mock-server\" \"npm run client\"",
     "start-frontend": "cd frontend && npm start",
     "start-backend": "cd backend && node server.js",
     "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
@@ -18,13 +23,16 @@
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build",
     "e2e": "cd frontend && npx cypress open",
-    "dev": "npm run check-server && npm start",
     "check-server": "node serverCheck.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.22"
   },
   "devDependencies": {
     "eslint-plugin-cypress": "^4.2.0"

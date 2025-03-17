@@ -1,119 +1,114 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import apiService from './utils/apiConfig';
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
+import { AuthContext } from './context/AuthContext';
+import { getCurrentUser } from './services/authService';
+
+// Layout Components
+import PatientLayout from './layouts/PatientLayout';
+import DoctorLayout from './layouts/DoctorLayout';
+import AdminLayout from './layouts/AdminLayout';
+
+// Auth Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import PatientDashboard from './pages/PatientDashboard';
-import DoctorDashboard from './pages/DoctorDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import PatientHealthEducation from './pages/PatientHealthEducation';
-import { AuthProvider } from './contexts/AuthContext';
 
-// Private route component
-function RequireAuth({ children, allowedRoles }) {
-  // We'll implement auth check logic inside this component
-  const token = localStorage.getItem('token');
-  const userStr = localStorage.getItem('user');
+// Patient Pages
+import PatientDashboard from './pages/patient/PatientDashboard';
+import HealthDashboard from './pages/HealthDashboard';
+import SubmitHealthData from './pages/SubmitHealthData';
+import PatientAppointments from './pages/PatientAppointments';
+import AppointmentSchedule from './pages/AppointmentSchedule';
+import AppointmentDetails from './pages/AppointmentDetails';
+
+// Doctor Pages
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const user = getCurrentUser();
   
-  if (!token || !userStr) {
-    return <Navigate to="/login" replace />;
+  if (!user || !user.token) {
+    return <Navigate to="/login" />;
   }
   
-  try {
-    const user = JSON.parse(userStr);
-    
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-      // Redirect to appropriate dashboard based on role
-      switch (user.role) {
-        case 'admin':
-          return <Navigate to="/admin/dashboard" replace />;
-        case 'doctor':
-          return <Navigate to="/doctor/dashboard" replace />;
-        case 'patient':
-          return <Navigate to="/patient/dashboard" replace />;
-        default:
-          return <Navigate to="/login" replace />;
-      }
-    }
-    
-    return children;
-  } catch (e) {
-    console.error('Error parsing user data', e);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    return <Navigate to="/login" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.user.role)) {
+    return <Navigate to={`/${user.user.role}/dashboard`} />;
   }
-}
+  
+  return children;
+};
 
 function App() {
+  const [auth, setAuth] = useState({
+    isAuthenticated: false,
+    user: null,
+    role: null
+  });
+  
   useEffect(() => {
-    // Configure the API service with the token from local storage
-    const token = localStorage.getItem('token');
-    if (token) {
-      apiService.setAuthToken(token); // Using proper method from apiService
+    const user = getCurrentUser();
+    
+    if (user && user.token) {
+      setAuth({
+        isAuthenticated: true,
+        user: user.user,
+        role: user.user.role
+      });
     }
   }, []);
-
+  
   return (
-    <Router>
-      <AuthProvider>
-        <div className="app">
-          <Header />
-          <main className="main-content">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              
-              {/* Private routes */}
-              <Route 
-                path="/patient/dashboard" 
-                element={
-                  <RequireAuth allowedRoles={['patient']}>
-                    <PatientDashboard />
-                  </RequireAuth>
-                } 
-              />
-              <Route 
-                path="/doctor/dashboard" 
-                element={
-                  <RequireAuth allowedRoles={['doctor']}>
-                    <DoctorDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route 
-                path="/admin/dashboard" 
-                element={
-                  <RequireAuth allowedRoles={['admin']}>
-                    <AdminDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route 
-                path="/patient/health-education" 
-                element={
-                  <RequireAuth allowedRoles={['patient']}>
-                    <PatientHealthEducation />
-                  </RequireAuth>
-                }
-              />
-              
-              {/* Redirects */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </AuthProvider>
-    </Router>
+    <AuthContext.Provider value={{ auth, setAuth }}>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          
+          {/* Patient Routes */}
+          <Route path="/patient/*" element={
+            <ProtectedRoute allowedRoles={['patient']}>
+              <PatientLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<PatientDashboard />} />
+            <Route path="health-dashboard" element={<HealthDashboard />} />
+            <Route path="health-data/submit" element={<SubmitHealthData />} />
+            <Route path="appointments" element={<PatientAppointments />} />
+            <Route path="appointments/schedule" element={<AppointmentSchedule />} />
+            <Route path="appointments/schedule/:doctorId" element={<AppointmentSchedule />} />
+            <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
+          </Route>
+          
+          {/* Doctor Routes */}
+          <Route path="/doctor/*" element={
+            <ProtectedRoute allowedRoles={['doctor']}>
+              <DoctorLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<DoctorDashboard />} />
+            {/* Add more doctor routes as needed */}
+          </Route>
+          
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            {/* Add more admin routes as needed */}
+          </Route>
+          
+          {/* Catch All */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </AuthContext.Provider>
   );
 }
 
