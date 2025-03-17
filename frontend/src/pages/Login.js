@@ -1,134 +1,122 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import apiService from '../utils/apiConfig';
+import '../styles/Auth.css';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [credentials, setCredentials] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [serverStatus, setServerStatus] = useState({ checking: true, connected: false });
-  const navigate = useNavigate();
-  const { setCurrentUser, login } = useContext(AuthContext);
+  const [error, setError] = useState('');
+  const [serverStatus, setServerStatus] = useState({ running: true, message: '' });
 
-  // Configure API and check server status when component mounts
+  // Check server connection on component mount
   useEffect(() => {
     const setupConnection = async () => {
-      setServerStatus({ checking: true, connected: false });
-      const connected = await apiService.configureApi();
-      setServerStatus({ checking: false, connected });
+      try {
+        // Use the apiService utility to check the health of the server
+        const healthStatus = await apiService.checkHealth();
+        
+        setServerStatus({ 
+          running: healthStatus.running, 
+          message: healthStatus.message 
+        });
+        
+        if (healthStatus.running) {
+          // Set auth token if available
+          const token = localStorage.getItem('token');
+          if (token) {
+            apiService.setAuthToken(token);
+          }
+        }
+      } catch (err) {
+        console.error('Server connection error:', err);
+        setServerStatus({
+          running: false,
+          message: `Cannot connect to the backend server at ${apiService.defaults.baseURL}. Please check if the server is running.`
+        });
+      }
     };
     
     setupConnection();
   }, []);
-
+  
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    // Don't attempt login if server is disconnected
-    if (!serverStatus.connected) {
-      setError('Cannot connect to server. Please ensure the backend is running.');
-      setLoading(false);
+    
+    if (!credentials.email || !credentials.password) {
+      setError('Please enter both email and password');
       return;
     }
-
+    
+    if (!serverStatus.running) {
+      setError('Server is not running. Please check your connection.');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
     try {
-      console.log('Attempting login with:', { email: formData.email });
-      
-      const result = await login(formData);
+      const result = await login(credentials);
       
       if (result.success) {
-        // Configure API with the new token
-        const token = localStorage.getItem('token');
-        if (token) {
-          apiService.setAuthToken(token);
-        }
-        
-        navigate('/dashboard');
-      } else {
-        console.error('Login error:', result.error);
-        
-        if (!navigator.onLine) {
-          setError('You appear to be offline. Please check your internet connection.');
-        } else if (result.error.response?.status === 401) {
-          setError('Invalid email or password. Please try again.');
-        } else if (result.error.response?.data?.error) {
-          setError(result.error.response.data.error);
+        // Navigate to the appropriate dashboard
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.role) {
+          navigate(`/${user.role}/dashboard`);
         } else {
-          setError('Login failed. Please check your credentials and ensure the server is running.');
+          navigate('/patient/dashboard'); // Default fallback
         }
-        
-        setLoading(false);
+      } else {
+        setError(result.error || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
       console.error('Login error:', err);
-      
-      if (!navigator.onLine) {
-        setError('You appear to be offline. Please check your internet connection.');
-      } else if (err.response?.status === 401) {
-        setError('Invalid email or password. Please try again.');
-      } else if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError('Login failed. Please check your credentials and ensure the server is running.');
-      }
-      
+    } finally {
       setLoading(false);
     }
-  };
-
-  // Function to retry server connection
-  const retryConnection = async () => {
-    setServerStatus({ checking: true, connected: false });
-    const connected = await apiService.configureApi();
-    setServerStatus({ checking: false, connected });
   };
 
   return (
-    <div className="login-page">
-      <div className="form-container">
-        <h2>Login to Your Account</h2>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h2>Welcome</h2>
+          <p>Sign in to your account</p>
+        </div>
         
-        {!serverStatus.checking && !serverStatus.connected && (
-          <div className="alert alert-warning">
-            <strong>Server Connection Issue:</strong> Cannot connect to the backend server.
-            <div className="mt-2">
-              <button 
-                className="btn btn-sm btn-outline-primary" 
-                onClick={retryConnection}
-              >
-                Retry Connection
-              </button>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {!serverStatus.running && (
+            <div className="server-warning">
+              <i className="fas fa-exclamation-triangle"></i>
+              <p>{serverStatus.message}</p>
             </div>
-          </div>
-        )}
-        
-        {error && <div className="alert alert-danger">{error}</div>}
-        
-        <form onSubmit={handleLogin}>
+          )}
+          
+          {error && <div className="auth-error">{error}</div>}
+          
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
               name="email"
-              value={formData.email}
+              value={credentials.email}
               onChange={handleChange}
-              required
-              className="form-control"
               placeholder="Enter your email"
+              disabled={loading || !serverStatus.running}
             />
           </div>
           
@@ -138,31 +126,32 @@ const Login = () => {
               type="password"
               id="password"
               name="password"
-              value={formData.password}
+              value={credentials.password}
               onChange={handleChange}
-              required
-              className="form-control"
               placeholder="Enter your password"
+              disabled={loading || !serverStatus.running}
             />
           </div>
           
-          <button
-            type="submit"
+          <button 
+            type="submit" 
             className="btn btn-primary btn-block"
-            disabled={loading || !serverStatus.connected}
+            disabled={loading || !serverStatus.running}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
-        </form>
-        
-        <div className="form-footer">
-          <p>
-            Don&apos;t have an account? <Link to="/register">Register</Link>
-          </p>
-          <p>
+          
+          <div className="auth-links">
             <Link to="/forgot-password">Forgot Password?</Link>
-          </p>
-        </div>
+            <Link to="/register">Create Account</Link>
+          </div>
+        </form>
+      </div>
+      
+      <div className="auth-footer">
+        <p>
+          Having trouble? Contact Ubumuntu Clinic at <a href="tel:+250782123456">+250 782 123 456</a>
+        </p>
       </div>
     </div>
   );

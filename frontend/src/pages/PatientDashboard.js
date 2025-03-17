@@ -1,21 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Add useNavigate import
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import apiService from '../utils/apiConfig';
 import '../styles/Dashboard.css';
 import { Icon } from '../utils/IconFallbacks';
 
-// Try to import icons directly, with fallback handling
-let iconComponents = {};
-try {
-  iconComponents = require('react-icons/fa');
-} catch (err) {
-  console.warn('react-icons/fa not available, using fallbacks');
-}
-
 const PatientDashboard = () => {
   const { currentUser } = useContext(AuthContext);
-  const navigate = useNavigate(); // Add navigate hook
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     appointments: 0,
     predictions: 0,

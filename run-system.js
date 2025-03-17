@@ -1,5 +1,7 @@
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
+const config = require('./config');
+const fs = require('fs');
 
 // Function to run a command in a specific directory
 const runCommand = (command, args, cwd) => {
@@ -15,22 +17,22 @@ const runCommand = (command, args, cwd) => {
 console.log('\x1b[36m%s\x1b[0m', '🚀 Starting Health Prediction System...');
 console.log('\x1b[36m%s\x1b[0m', '======================================');
 
-// Start backend server
-console.log('\x1b[33m%s\x1b[0m', '📡 Starting Backend Server...');
-const backend = runCommand('npm', ['run', 'dev'], path.join(__dirname, 'backend'));
-
-// Start frontend server with specific port
-console.log('🖥️  Starting Frontend Server...');
-const frontendProcess = spawn('npm', ['run', 'start'], {
-  cwd: path.join(__dirname, 'frontend'),
-  stdio: 'inherit',
-  shell: true
-});
-
-// Handle process termination
-process.on('SIGINT', () => {
-  console.log('\n\x1b[31m%s\x1b[0m', '🛑 Stopping all services...');
-  backend.kill();
-  frontendProcess.kill();
-  process.exit();
+// Ensure the backend server is running on the correct port and handle port conflicts
+exec('node serverCheck.js', (error, stdout, stderr) => {
+    if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.error(`Stderr: ${stderr}`);
+        return;
+    }
+    console.log(stdout);
+    if (stdout.includes('✅ Server successfully detected on port')) {
+        const port = fs.readFileSync('backend/server-port.txt', 'utf8').trim();
+        exec('npm run dev', { cwd: 'backend' });
+        exec(`npm start -- --port=${port}`, { cwd: 'frontend' });
+    } else {
+        console.error('❌ Backend server is not running on the expected port.');
+    }
 });

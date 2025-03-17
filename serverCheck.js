@@ -8,32 +8,34 @@ const checkServer = (port) => {
   return new Promise((resolve) => {
     console.log(`Checking if server is running on port ${port}...`);
     
-    let isDone = false;
-    
-    const req = http.get(`http://localhost:${port}/api/v1`, (res) => {
-      if (!isDone) {
-        isDone = true;
-        console.log(`✅ Server is running on port ${port}! Status code: ${res.statusCode}`);
+    const options = {
+      hostname: 'localhost',
+      port: port,
+      timeout: 2000,
+    };
+
+    const req = http.request(options, (res) => {
+      if (res.statusCode === 200) {
+        console.log(`✅ Server is running on port ${port}! Status code: 200`);
         resolve(true);
+      } else {
+        console.error(`❌ Server responded with status code: ${res.statusCode}`);
+        resolve(false);
       }
     });
-    
+
     req.on('error', (err) => {
-      if (!isDone) {
-        isDone = true;
-        console.log(`❌ Server not running on port ${port}: ${err.message}`);
-        resolve(false);
-      }
+      console.error(`❌ Connection error on port ${port}: ${err.message}`);
+      resolve(false);
     });
-    
-    req.setTimeout(3000, () => {
-      if (!isDone) {
-        isDone = true;
-        req.destroy();
-        console.log(`❌ Connection timeout on port ${port}`);
-        resolve(false);
-      }
+
+    req.on('timeout', () => {
+      console.error(`❌ Connection timeout on port ${port}`);
+      req.abort();
+      resolve(false);
     });
+
+    req.end();
   });
 };
 
@@ -114,3 +116,28 @@ const main = async () => {
 
 // Run the main function
 main();
+
+const options = {
+    hostname: 'localhost',
+    port: 9091,
+    timeout: 2000,
+};
+
+const req = http.request(options, (res) => {
+    if (res.statusCode === 200) {
+        console.log('✅ Server is running on port 9091! Status code: 200');
+    } else {
+        console.error(`❌ Server responded with status code: ${res.statusCode}`);
+    }
+});
+
+req.on('error', (err) => {
+    console.error(`❌ Connection error on port 9091: ${err.message}`);
+});
+
+req.on('timeout', () => {
+    console.error('❌ Connection timeout on port 9091');
+    req.abort();
+});
+
+req.end();

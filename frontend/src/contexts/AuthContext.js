@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import apiService from '../utils/apiConfig';
 
 // Create context
@@ -11,7 +10,6 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for stored user and token on mount
@@ -42,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(response.data.user);
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        apiService.setAuthToken(response.data.token); // Fixed: Using apiService instead of api
+        apiService.setAuthToken(response.data.token);
         return { success: true };
       } else {
         return { success: false, error: response.error };
@@ -74,7 +72,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     apiService.removeAuthToken();
-    navigate('/login');
+    // Use plain DOM navigation instead of React Router's navigate
+    window.location.href = '/login';
   };
 
   const value = {

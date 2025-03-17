@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import apiService from './utils/apiConfig';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -10,48 +10,55 @@ import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import PatientHealthEducation from './pages/PatientHealthEducation';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Private route component
-const PrivateRoute = ({ element, allowedRoles }) => {
-  const { currentUser, loading } = useAuth();
+function RequireAuth({ children, allowedRoles }) {
+  // We'll implement auth check logic inside this component
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
   
-  if (loading) {
-    return <div className="loading-screen">Loading...</div>;
-  }
-  
-  if (!currentUser) {
+  if (!token || !userStr) {
     return <Navigate to="/login" replace />;
   }
   
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    // Redirect to appropriate dashboard based on role
-    switch (currentUser.role) {
-      case 'admin':
-        return <Navigate to="/admin/dashboard" replace />;
-      case 'doctor':
-        return <Navigate to="/doctor/dashboard" replace />;
-      case 'patient':
-        return <Navigate to="/patient/dashboard" replace />;
-      default:
-        return <Navigate to="/login" replace />;
+  try {
+    const user = JSON.parse(userStr);
+    
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      // Redirect to appropriate dashboard based on role
+      switch (user.role) {
+        case 'admin':
+          return <Navigate to="/admin/dashboard" replace />;
+        case 'doctor':
+          return <Navigate to="/doctor/dashboard" replace />;
+        case 'patient':
+          return <Navigate to="/patient/dashboard" replace />;
+        default:
+          return <Navigate to="/login" replace />;
+      }
     }
+    
+    return children;
+  } catch (e) {
+    console.error('Error parsing user data', e);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return <Navigate to="/login" replace />;
   }
-  
-  return element;
-};
+}
 
 function App() {
   useEffect(() => {
-    // Configure the API with the token from local storage
+    // Configure the API service with the token from local storage
     const token = localStorage.getItem('token');
     if (token) {
-      apiService.setAuthToken(token);
+      apiService.setAuthToken(token); // Using proper method from apiService
     }
   }, []);
 
   return (
-    <BrowserRouter>
+    <Router>
       <AuthProvider>
         <div className="app">
           <Header />
@@ -65,19 +72,35 @@ function App() {
               {/* Private routes */}
               <Route 
                 path="/patient/dashboard" 
-                element={<PrivateRoute element={<PatientDashboard />} allowedRoles={['patient']} />} 
+                element={
+                  <RequireAuth allowedRoles={['patient']}>
+                    <PatientDashboard />
+                  </RequireAuth>
+                } 
               />
               <Route 
                 path="/doctor/dashboard" 
-                element={<PrivateRoute element={<DoctorDashboard />} allowedRoles={['doctor']} />} 
+                element={
+                  <RequireAuth allowedRoles={['doctor']}>
+                    <DoctorDashboard />
+                  </RequireAuth>
+                }
               />
               <Route 
                 path="/admin/dashboard" 
-                element={<PrivateRoute element={<AdminDashboard />} allowedRoles={['admin']} />} 
+                element={
+                  <RequireAuth allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </RequireAuth>
+                }
               />
               <Route 
                 path="/patient/health-education" 
-                element={<PrivateRoute element={<PatientHealthEducation />} allowedRoles={['patient']} />}
+                element={
+                  <RequireAuth allowedRoles={['patient']}>
+                    <PatientHealthEducation />
+                  </RequireAuth>
+                }
               />
               
               {/* Redirects */}
@@ -90,7 +113,7 @@ function App() {
           <Footer />
         </div>
       </AuthProvider>
-    </BrowserRouter>
+    </Router>
   );
 }
 

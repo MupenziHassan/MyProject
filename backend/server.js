@@ -3,6 +3,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const config = require('../config');
+const net = require('net'); // For port checking
 
 // Load environment variables from different possible locations
 const envPaths = [
@@ -55,6 +57,18 @@ if (process.env.NODE_ENV === 'development') {
   app.use(require('morgan')('dev'));
 }
 
+// Import routes
+const authRoutes = require('./src/routes/auth');
+const userRoutes = require('./src/routes/users');
+const healthCheckRoutes = require('./src/routes/healthCheck');
+// ...other routes...
+
+// Apply routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/health-check', healthCheckRoutes);
+// ...other route applications...
+
 // Mount routes
 app.use('/api/v1/auth', require('./src/routes/auth'));
 try {
@@ -103,7 +117,7 @@ app.get('/api/v1/status', (req, res) => {
     message: 'Server is running',
     serverTime: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    port: server?.address()?.port || 'unknown'
+    port: server?.address()?.port || process.env.PORT || 'unknown'
   });
 });
 
@@ -124,32 +138,106 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Use higher port range to avoid conflicts
-const startingPort = 9090;
+/**
+ * Checks if a port is in use
+ * @param {number} port - The port to check
+ * @returns {Promise<boolean>} True if port is in use, false otherwise
+ */
+function isPortInUse(port) {
+  return new Promise((resolve) => {
+    const tester = net.createServer()
+      .once('error', () => resolve(true))
+      .once('listening', () => {
+        tester.close();
+        resolve(false);
+      })
+      .listen(port);
+  });
+}
 
-// Store the server instance so we can access its port
-let server;
+/**
+ * Find available port from a range
+ * @param {number} startPort - Starting port number
+ * @param {number} endPort - Ending port number
+ * @returns {Promise<number|null>} Available port or null if none found
+ */
+async function findAvailablePort(startPort, endPort) {
+  console.log(`Searching for available port in range ${startPort}-${endPort}...`);
+  
+  // First try the preferred port (e.g., from config or env)
+  const preferredPort = process.env.PORT || config?.backend?.port;
+  if (preferredPort && preferredPort >= startPort && preferredPort <= endPort) {
+    const inUse = await isPortInUse(preferredPort);
+    if (!inUse) {
+      console.log(`Preferred port ${preferredPort} is available`);
+      return preferredPort;
+    } else {
+      console.log(`Preferred port ${preferredPort} is in use`);
+    }
+  }
+  
+  // Try each port in the specified range
+  for (let port = startPort; port <= endPort; port++) {
+    const inUse = await isPortInUse(port);
+    if (!inUse) {
+      console.log(`Found available port: ${port}`);
+      return port;
+    }
+  }
+  
+  console.error(`No available ports in range ${startPort}-${endPort}`);
+  return null;
+}
 
-// Try ports sequentially until one works
-const startServer = (port) => {
-  server = app.listen(port)
-    .on('listening', () => {
+/**
+ * Start the server with automatic port selection
+ */
+async function startServer() {
+  try {
+    // Define port range - these ports will be checked in sequence
+    const startPort = 9090;
+    const endPort = 9100;
+    
+    // Find available port
+    const port = await findAvailablePort(startPort, endPort);
+    
+    if (!port) {
+      console.error('Failed to find available port. Server cannot start.');
+      process.exit(1);
+    }
+    
+    // Set the port for later reference
+    process.env.PORT = port;
+    
+    // Start server on the available port
+    server = app.listen(port, () => {
       console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
       
-      // Handle unhandled promise rejections
-      process.on('unhandledRejection', (err, promise) => {
-        console.log(`Error: ${err.message}`);
+      // Create a port file for other processes to easily find the running server port
+      const portFilePath = path.join(__dirname, 'server-port.txt');
+      fs.writeFileSync(portFilePath, port.toString(), 'utf8');
+      console.log(`Port number saved to ${portFilePath}`);
+    });
+    
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err, promise) => {
+      console.log(`Error: ${err.message}`);
+      // Gracefully close the server before exiting
+      if (server) {
         server.close(() => process.exit(1));
-      });
-    })
-    .on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.log(`Port ${port} is already in use. Trying port ${port + 1}`);
-        startServer(port + 1);
       } else {
-        console.error('Server error:', err);
+        process.exit(1);
       }
     });
-};
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
 
-startServer(startingPort);
+// Store the server instance
+let server;
+
+// Start the server with automatic port selection
+startServer();
