@@ -20,13 +20,17 @@ console.log('\x1b[33m%s\x1b[0m', '📡 Starting Backend Server...');
 const backend = runCommand('npm', ['run', 'dev'], path.join(__dirname, 'backend'));
 
 // Start frontend server with specific port
-console.log('\x1b[35m%s\x1b[0m', '🖥️  Starting Frontend Server...');
-const frontend = runCommand('npm', ['run', 'start-frontend'], path.join(__dirname, 'frontend'));
+console.log('🖥️  Starting Frontend Server...');
+const frontendProcess = spawn('npm', ['run', 'start'], {
+  cwd: path.join(__dirname, 'frontend'),
+  stdio: 'inherit',
+  shell: true
+});
 
 // Handle process termination
 process.on('SIGINT', () => {
   console.log('\n\x1b[31m%s\x1b[0m', '🛑 Stopping all services...');
   backend.kill();
-  frontend.kill();
+  frontendProcess.kill();
   process.exit();
 });

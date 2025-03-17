@@ -35,7 +35,7 @@ const Register = () => {
     setLoading(true);
     
     try {
-      const res = await axios.post('/api/v1/auth/register', {
+      await axios.post('/api/v1/auth/register', {
         name,
         email,
         password,

@@ -1,0 +1,484 @@
+/* Health Education Page Styles */
+
+.health-education-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.header-content h1 {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin: 0 0 0.5rem;
+}
+
+.header-content p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.ubumuntu-clinic-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+}
+
+.ubumuntu-clinic-badge img {
+  height: 40px;
+  width: auto;
+}
+
+.ubumuntu-clinic-badge span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Featured Campaigns */
+.featured-campaigns {
+  margin-bottom: 3rem;
+}
+
+.featured-campaigns h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin: 0 0 1rem;
+}
+
+.campaigns-carousel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.campaign-card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.campaign-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.campaign-dates {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.campaign-details {
+  padding: 1.5rem;
+}
+
+.campaign-details h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  color: var(--primary-color);
+}
+
+.campaign-details p {
+  margin: 0 0 1.25rem;
+  color: var(--text-secondary);
+}
+
+/* Search and Filter */
+.search-filter-container {
+  margin-bottom: 2.5rem;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-box input:focus {
+  border-color: var(--primary-color);
+}
+
+.search-box i,
+.search-box svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+}
+
+.clear-search:hover {
+  background-color: var(--neutral-200);
+  color: var(--text-primary);
+}
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.filter-btn {
+  background-color: var(--neutral-100);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: var(--neutral-200);
+  color: var(--text-primary);
+}
+
+.filter-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Featured Resources Section */
+.featured-resources-section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius-sm);
+}
+
+.featured-resources-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.featured-resource-card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-resource-card .resource-image {
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.resource-category {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.featured-resource-card .resource-content {
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-resource-card h3 {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.featured-resource-card p {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary);
+  flex-grow: 1;
+}
+
+.resource-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.resource-date,
+.read-time {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* All Resources Grid */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.resource-card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.resource-card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.resource-category-tag {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+}
+
+.resource-card-content {
+  padding: 1.25rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-card-content h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.resource-card-content p {
+  margin: 0 0 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resource-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.resource-card-meta .read-time {
+  font-size: 0.8rem;
+}
+
+.resource-card-meta .read-more {
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.no-results i,
+.no-results svg {
+  color: var(--neutral-300);
+  margin-bottom: 1rem;
+}
+
+.no-results p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+/* Clinic Information */
+.clinic-information-section {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--neutral-200);
+}
+
+.clinic-info-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+}
+
+.clinic-description h2 {
+  color: var(--primary-color);
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+}
+
+.clinic-description p {
+  margin: 0 0 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.clinic-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.clinic-contact-info {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+}
+
+.clinic-contact-info h3 {
+  color: var(--text-primary);
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+
+.contact-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contact-item i,
+.contact-item svg {
+  color: var(--primary-color);
+  min-width: 16px;
+}
+
+.contact-item span {
+  color: var(--text-secondary);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .featured-resources-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .clinic-info-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .health-education-page {
+    padding: 1rem;
+  }
+  
+  .campaigns-carousel {
+    grid-template-columns: 1fr;
+  }
+  
+  .resources-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .clinic-actions {
+    flex-direction: column;
+  }
+}

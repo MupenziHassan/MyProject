@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
+import apiService from '../utils/apiConfig';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,8 +10,20 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [serverStatus, setServerStatus] = useState({ checking: true, connected: false });
   const navigate = useNavigate();
-  const { setCurrentUser } = useContext(AuthContext);
+  const { setCurrentUser, login } = useContext(AuthContext);
+
+  // Configure API and check server status when component mounts
+  useEffect(() => {
+    const setupConnection = async () => {
+      setServerStatus({ checking: true, connected: false });
+      const connected = await apiService.configureApi();
+      setServerStatus({ checking: false, connected });
+    };
+    
+    setupConnection();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -20,35 +32,68 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
+    // Don't attempt login if server is disconnected
+    if (!serverStatus.connected) {
+      setError('Cannot connect to server. Please ensure the backend is running.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axios.post('/api/v1/auth/login', formData);
+      console.log('Attempting login with:', { email: formData.email });
       
-      // Save token to localStorage
-      localStorage.setItem('token', res.data.token);
+      const result = await login(formData);
       
-      // Set auth header for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
-      
-      // Update auth context with user data
-      setCurrentUser(res.data.data);
-      
-      // Redirect based on user role
-      if (res.data.data.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else if (res.data.data.role === 'doctor') {
-        navigate('/doctor/dashboard');
+      if (result.success) {
+        // Configure API with the new token
+        const token = localStorage.getItem('token');
+        if (token) {
+          apiService.setAuthToken(token);
+        }
+        
+        navigate('/dashboard');
       } else {
-        navigate('/patient/dashboard');
+        console.error('Login error:', result.error);
+        
+        if (!navigator.onLine) {
+          setError('You appear to be offline. Please check your internet connection.');
+        } else if (result.error.response?.status === 401) {
+          setError('Invalid email or password. Please try again.');
+        } else if (result.error.response?.data?.error) {
+          setError(result.error.response.data.error);
+        } else {
+          setError('Login failed. Please check your credentials and ensure the server is running.');
+        }
+        
+        setLoading(false);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      
+      if (!navigator.onLine) {
+        setError('You appear to be offline. Please check your internet connection.');
+      } else if (err.response?.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Login failed. Please check your credentials and ensure the server is running.');
+      }
+      
       setLoading(false);
     }
+  };
+
+  // Function to retry server connection
+  const retryConnection = async () => {
+    setServerStatus({ checking: true, connected: false });
+    const connected = await apiService.configureApi();
+    setServerStatus({ checking: false, connected });
   };
 
   return (
@@ -56,9 +101,23 @@ const Login = () => {
       <div className="form-container">
         <h2>Login to Your Account</h2>
         
+        {!serverStatus.checking && !serverStatus.connected && (
+          <div className="alert alert-warning">
+            <strong>Server Connection Issue:</strong> Cannot connect to the backend server.
+            <div className="mt-2">
+              <button 
+                className="btn btn-sm btn-outline-primary" 
+                onClick={retryConnection}
+              >
+                Retry Connection
+              </button>
+            </div>
+          </div>
+        )}
+        
         {error && <div className="alert alert-danger">{error}</div>}
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
@@ -69,6 +128,7 @@ const Login = () => {
               onChange={handleChange}
               required
               className="form-control"
+              placeholder="Enter your email"
             />
           </div>
           
@@ -82,13 +142,14 @@ const Login = () => {
               onChange={handleChange}
               required
               className="form-control"
+              placeholder="Enter your password"
             />
           </div>
           
           <button
             type="submit"
             className="btn btn-primary btn-block"
-            disabled={loading}
+            disabled={loading || !serverStatus.connected}
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -96,7 +157,7 @@ const Login = () => {
         
         <div className="form-footer">
           <p>
-            Don't have an account? <Link to="/register">Register</Link>
+            Don&apos;t have an account? <Link to="/register">Register</Link>
           </p>
           <p>
             <Link to="/forgot-password">Forgot Password?</Link>

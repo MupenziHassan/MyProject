@@ -1,13 +1,13 @@
 {
   "name": "health-prediction-system",
   "version": "1.0.0",
-  "description": "Cancer risk prediction system with ML integration",
-  "main": "index.js",
+  "description": "Health prediction system with React frontend and Node.js backend",
+  "main": "run-system.js",
   "scripts": {
     "start": "node run-system.js",
-    "start-frontend": "cd frontend && cross-env PORT=3001 npm start",
-    "start-backend": "cd backend && npm run dev",
-    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start-frontend": "cd frontend && npm start",
+    "start-backend": "cd backend && node server.js",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
@@ -18,7 +18,8 @@
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build",
     "e2e": "cd frontend && npx cypress open",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\""
+    "dev": "npm run check-server && npm start",
+    "check-server": "node serverCheck.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,87 +1,92 @@
-import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import setAuthToken from '../utils/setAuthToken';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import apiService from '../utils/apiConfig';
 
+// Create context
 export const AuthContext = createContext();
+
+// Custom hook to use the auth context
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  // Check if user is already logged in (via token)
   useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      
-      if (token) {
-        setAuthToken(token);
-        try {
-          const res = await axios.get('/api/v1/auth/me');
-          setCurrentUser(res.data.data);
-        } catch (err) {
-          // Token is invalid or expired
-          localStorage.removeItem('token');
-          setAuthToken(null);
-        }
+    // Check for stored user and token on mount
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    if (storedUser && token) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+        apiService.setAuthToken(token);
+      } catch (e) {
+        console.error('Error parsing stored user', e);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
-      
-      setLoading(false);
-    };
-
-    loadUser();
+    }
+    
+    setLoading(false);
   }, []);
 
-  // Login function
-  const login = async (email, password) => {
+  const login = async (credentials) => {
     try {
-      const res = await axios.post('http://localhost:5001/api/v1/auth/login', { email, password });
+      const response = await apiService.request(() => 
+        apiService.auth.login(credentials)
+      );
       
-      // Set token in local storage
-      localStorage.setItem('token', res.data.token);
-      
-      // Set token in auth header
-      setAuthToken(res.data.token);
-      
-      // Set user in state
-      setCurrentUser(res.data.data);
-      
-      return res.data.data;
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
-      throw err;
+      if (response.success) {
+        setCurrentUser(response.data.user);
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        apiService.setAuthToken(response.data.token); // Fixed: Using apiService instead of api
+        return { success: true };
+      } else {
+        return { success: false, error: response.error };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   };
 
-  // Logout function
-  const logout = () => {
-    // Remove token
-    localStorage.removeItem('token');
-    setAuthToken(null);
-    setCurrentUser(null);
-  };
-  
-  // Register function
   const register = async (userData) => {
     try {
-      const res = await axios.post('/api/v1/auth/register', userData);
-      return res.data;
-    } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
-      throw err;
+      const response = await apiService.request(() => 
+        apiService.auth.register(userData)
+      );
+      
+      if (response.success) {
+        // Optionally auto-login after registration
+        return { success: true };
+      } else {
+        return { success: false, error: response.error };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
     }
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    apiService.removeAuthToken();
+    navigate('/login');
+  };
+
+  const value = {
+    currentUser,
+    loading,
+    login,
+    register,
+    logout
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      currentUser, 
-      loading, 
-      error, 
-      login, 
-      logout, 
-      register, 
-      setCurrentUser 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

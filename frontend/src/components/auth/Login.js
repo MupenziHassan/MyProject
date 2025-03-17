@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import { AuthContext } from '../../contexts/AuthContext';
+import api from '../../services/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -26,19 +26,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Use environment variable for API URL
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1';
-      console.log('Attempting login with:', { email: formData.email, apiUrl });
+      console.log('Attempting login with:', { email: formData.email });
       
-      const res = await axios.post(`${apiUrl}/auth/login`, formData);
+      const res = await api.post('/auth/login', formData);
       
       console.log('Login response:', res.data);
       
       // Save token to localStorage
       localStorage.setItem('token', res.data.token);
-      
-      // Set auth header for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       
       // Update auth context with user data
       setCurrentUser(res.data.data);
@@ -55,7 +50,7 @@ const Login = () => {
       console.error('Login error:', err);
       setError(
         err.response?.data?.error || 
-        'Login failed. Please check your credentials and ensure the server is running.'
+        'Login failed. Please check your credentials.'
       );
       setLoading(false);
     }

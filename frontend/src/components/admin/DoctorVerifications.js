@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const DoctorVerifications = () => {
@@ -8,11 +8,7 @@ const DoctorVerifications = () => {
   const [filter, setFilter] = useState('pending'); // 'pending', 'verified', 'all'
   const [viewingDoctor, setViewingDoctor] = useState(null);
 
-  useEffect(() => {
-    fetchVerifications();
-  }, [filter]);
-
-  const fetchVerifications = async () => {
+  const fetchVerifications = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`/api/v1/admin/verifications?status=${filter}`);
@@ -22,7 +18,11 @@ const DoctorVerifications = () => {
       setError('Failed to load doctor verifications');
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchVerifications();
+  }, [fetchVerifications]);
 
   const handleApprove = async (doctorId) => {
     try {

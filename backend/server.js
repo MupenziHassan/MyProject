@@ -96,6 +96,17 @@ app.use('/api/v1/notifications', require('./src/routes/notifications'));
 app.use('/api/v1/appointments', require('./src/routes/appointments'));
 app.use('/api/v1/mlapi', require('./src/routes/mlapi'));
 
+// Add a server status endpoint
+app.get('/api/v1/status', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Server is running',
+    serverTime: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: server?.address()?.port || 'unknown'
+  });
+});
+
 // Base route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Health Prediction System API' });
@@ -116,9 +127,12 @@ app.use((err, req, res, next) => {
 // Use higher port range to avoid conflicts
 const startingPort = 9090;
 
+// Store the server instance so we can access its port
+let server;
+
 // Try ports sequentially until one works
 const startServer = (port) => {
-  const server = app.listen(port)
+  server = app.listen(port)
     .on('listening', () => {
       console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
       
