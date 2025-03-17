@@ -1,39 +1,70 @@
 import axios from 'axios';
 
-// Create axios instance with default config
-const api = axios.create();
+// Get the backend port from localStorage if available
+const getBaseURL = () => {
+  const port = localStorage.getItem('api_port') || '9090';
+  return `http://localhost:${port}`;
+};
 
-// Add request interceptor to include auth token in all requests
+// Create API instance
+const api = axios.create({
+  baseURL: getBaseURL(),
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add a request interceptor to update baseURL if port changes
 api.interceptors.request.use(
-  (config) => {
-    // Get token from localStorage
+  config => {
+    config.baseURL = getBaseURL();
+    
+    // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor for error handling
+// Add a response interceptor to handle common errors
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    console.error('API Error:', error);
-    // Handle token expiration
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      // Optional: Redirect to login page
-      // window.location.href = '/login';
+  response => response,
+  error => {
+    if (error.response) {
+      // Server responded with an error status code
+      console.error('API Error:', error.response.status, error.response.data);
+      
+      // Handle 401 Unauthorized
+      if (error.response.status === 401) {
+        localStorage.removeItem('token');
+        // Redirect to login page in a real implementation
+      }
+    } else if (error.request) {
+      // Request made but no response received
+      console.error('API Error: No response received', error.request);
+    } else {
+      // Error setting up the request
+      console.error('API Error:', error.message);
     }
+    
     return Promise.reject(error);
   }
 );
 
-// Export API instance
+// Helper to set auth token
+api.setAuthToken = (token) => {
+  if (token) {
+    localStorage.setItem('token', token);
+  } else {
+    localStorage.removeItem('token');
+  }
+};
+
 export default api;

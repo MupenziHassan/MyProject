@@ -184,6 +184,26 @@
   text-decoration: underline;
 }
 
+/* Add this to your Auth.css file if it exists, or create it */
+
+.auth-success {
+  background-color: #d1fae5;
+  border-left: 4px solid #10b981;
+  color: #047857;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.auth-success i {
+  margin-right: 8px;
+  margin-top: 2px;
+}
+
+/* Make sure the existing styles for auth-error and server-warning are there */
+
 /* Responsive adjustments */
 @media (max-width: 500px) {
   .auth-card {

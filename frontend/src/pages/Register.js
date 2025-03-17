@@ -1,51 +1,65 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
+import '../styles/Auth.css';
 
 const Register = () => {
+  const auth = useContext(AuthContext);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    password2: '',
+    confirmPassword: '',
     role: 'patient'
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const { name, email, password, password2, role } = formData;
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
-    if (password !== password2) {
+    // Form validation
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+    
     setLoading(true);
+    setError('');
     
     try {
-      await axios.post('/api/v1/auth/register', {
-        name,
-        email,
-        password,
-        role
-      });
+      // Remove confirmPassword as it's not needed for API
+      const { confirmPassword, ...userData } = formData;
       
-      setLoading(false);
-      navigate('/login');
+      const result = await auth.register(userData);
+      
+      if (result.success) {
+        // Set registration success state and redirect to login
+        auth.setRegistrationSuccess(true);
+        navigate('/login');
+      } else {
+        setError(result.error || 'Registration failed. Please try again.');
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      console.error('Registration error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -64,7 +78,7 @@ const Register = () => {
               type="text"
               id="name"
               name="name"
-              value={name}
+              value={formData.name}
               onChange={handleChange}
               required
               className="form-control"
@@ -77,7 +91,7 @@ const Register = () => {
               type="email"
               id="email"
               name="email"
-              value={email}
+              value={formData.email}
               onChange={handleChange}
               required
               className="form-control"
@@ -90,7 +104,7 @@ const Register = () => {
               type="password"
               id="password"
               name="password"
-              value={password}
+              value={formData.password}
               onChange={handleChange}
               required
               minLength="6"
@@ -99,12 +113,12 @@ const Register = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="password2">Confirm Password</label>
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <input
               type="password"
-              id="password2"
-              name="password2"
-              value={password2}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
               onChange={handleChange}
               required
               minLength="6"
@@ -117,14 +131,14 @@ const Register = () => {
             <select
               id="role"
               name="role"
-              value={role}
+              value={formData.role}
               onChange={handleChange}
               className="form-control"
             >
               <option value="patient">Patient</option>
               <option value="doctor">Doctor</option>
             </select>
-            {role === 'doctor' && (
+            {formData.role === 'doctor' && (
               <small className="form-text text-muted">
                 Note: Doctor accounts require verification before access is granted.
               </small>

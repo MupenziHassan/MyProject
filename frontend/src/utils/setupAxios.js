@@ -1,27 +1,28 @@
 import axios from 'axios';
-import fs from 'fs';
+import fs from 'fs-extra'; // Use fs-extra for better cross-platform support
 
-/**
- * Setup Axios with dynamic port detection for backend server
- * This is a comprehensive port detection system that tries multiple methods
- * to find the running backend server port
- */
+// Constants for API configuration
+const DEFAULT_PORTS = [9090, 9091, 9092, 9093, 9094, 9095, 5000, 8000, 3000];
+const DEFAULT_TIMEOUT = 3000; // 3 seconds
+
 export const setupAxios = async () => {
   try {
-    // Step 1: Check localStorage for cached port that worked previously
     const cachedPort = localStorage.getItem('api_port');
+    
+    // Step 1: Try cached port first
     if (cachedPort) {
-      console.log(`Trying cached port from localStorage: ${cachedPort}`);
       try {
+        console.log(`Trying cached port: ${cachedPort}`);
         const response = await axios.get(`http://localhost:${cachedPort}/api/health-check`, { 
-          timeout: 2000 
+          timeout: DEFAULT_TIMEOUT 
         });
+        
         if (response.data && response.data.success) {
           console.log(`Successfully connected using cached port: ${cachedPort}`);
           return { success: true, port: cachedPort };
         }
       } catch (cachedError) {
-        console.log('Cached port failed, continuing with port discovery...');
+        console.log(`Cached port ${cachedPort} failed:`, cachedError.message);
         // Continue to other methods if cached port fails
       }
     }
@@ -32,13 +33,15 @@ export const setupAxios = async () => {
       // This code path is primarily for development with local server
       // or when running inside Electron where Node APIs are available
       const portFilePath = '../../backend/server-port.txt';
-      const port = fs.readFileSync(portFilePath, 'utf8').trim();
+      const port = await fs.readFile(portFilePath, 'utf8').trim();
+      
       if (port && !isNaN(parseInt(port))) {
         console.log(`Found port in server-port.txt: ${port}`);
         try {
           const response = await axios.get(`http://localhost:${port}/api/health-check`, { 
-            timeout: 2000 
+            timeout: DEFAULT_TIMEOUT 
           });
+          
           if (response.data && response.data.success) {
             console.log(`Successfully connected using port from file: ${port}`);
             localStorage.setItem('api_port', port);
@@ -49,84 +52,38 @@ export const setupAxios = async () => {
         }
       }
     } catch (fsError) {
-      // File reading failed, which is expected in browser environment
-      // Continue with other methods
+      console.log('Could not read port from file:', fsError.message);
     }
 
-    // Step 3: Check environment variables (when available in certain environments)
-    const envPort = process.env.REACT_APP_API_PORT || process.env.REACT_APP_BACKEND_PORT;
-    if (envPort) {
-      console.log(`Trying port from environment variables: ${envPort}`);
+    // Step 3: Try default ports
+    console.log('Trying default ports...');
+    for (const port of DEFAULT_PORTS) {
       try {
-        const response = await axios.get(`http://localhost:${envPort}/api/health-check`, { 
-          timeout: 2000 
-        });
-        if (response.data && response.data.success) {
-          console.log(`Successfully connected using port from env vars: ${envPort}`);
-          localStorage.setItem('api_port', envPort);
-          return { success: true, port: envPort };
-        }
-      } catch (envPortError) {
-        console.log(`Port ${envPort} from env vars not responding`);
-      }
-    }
-
-    // Step 4: Try common ports in order of likelihood
-    const commonPorts = [9091, 9090, 9092, 9093, 9094, 9095, 5000, 8080, 3000, 8000];
-    
-    for (const port of commonPorts) {
-      console.log(`Trying common port: ${port}`);
-      try {
+        console.log(`Trying port ${port}...`);
         const response = await axios.get(`http://localhost:${port}/api/health-check`, { 
-          timeout: 1500 // Shorter timeout for port scanning
+          timeout: DEFAULT_TIMEOUT 
         });
         
         if (response.data && response.data.success) {
-          console.log(`Successfully connected on port: ${port}`);
+          console.log(`Successfully connected on port ${port}`);
           localStorage.setItem('api_port', port.toString());
-          return { success: true, port: port.toString() };
+          return { success: true, port };
         }
       } catch (error) {
-        // Continue trying other ports
-        console.log(`Port ${port} not responding or returned error`);
+        // Just skip failed ports
       }
     }
 
-    // Step 5: Try port scanning as a last resort (a limited range to be efficient)
-    console.log('Trying port scan as last resort...');
-    // Use a smaller range for better performance
-    const startPort = 9080;
-    const endPort = 9100; 
-
-    for (let port = startPort; port <= endPort; port++) {
-      try {
-        console.log(`Scanning port: ${port}`);
-        const response = await axios.get(`http://localhost:${port}/api/health-check`, { 
-          timeout: 1000 // Very short timeout for scanning
-        });
-        
-        if (response.data && response.data.success) {
-          console.log(`Port scan found server on port: ${port}`);
-          localStorage.setItem('api_port', port.toString());
-          return { success: true, port: port.toString() };
-        }
-      } catch (error) {
-        // Continue scanning
-      }
-    }
-
-    // If we get here, no working port was found
-    console.error('Failed to find a working backend server port');
+    // If we get here, all connection attempts failed
     return { 
       success: false, 
-      error: 'Backend server not found on any expected port' 
+      error: 'Could not connect to backend server on any port.' 
     };
-
   } catch (error) {
-    console.error('Error during port detection:', error.message);
-    return { 
-      success: false, 
-      error: `Port detection failed: ${error.message}` 
+    console.error('Error in setupAxios:', error);
+    return {
+      success: false,
+      error: `Setup error: ${error.message}`
     };
   }
 };

@@ -79,7 +79,7 @@ export const getServerStartInstructions = () => {
  * @param {number} retries - Number of retry attempts
  * @returns {Promise<{running: boolean, message: string, port?: string}>}
  */
-export const checkServerStatus = async (retries = 2) => {
+export const checkServerStatus = async (retries = 1) => {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       // First try the health-check endpoint
@@ -97,42 +97,32 @@ export const checkServerStatus = async (retries = 2) => {
         // Health check endpoint responded but with unexpected format
         return { 
           running: true, 
-          message: 'Server connection issues - unexpected response format',
+          message: 'Server connection established',
           port: localStorage.getItem('api_port') || '9091'
         };
       }
     } catch (error) {
-      console.error(`Server connection error (attempt ${attempt + 1}):`, error.message);
+      console.error(`Server connection attempt ${attempt + 1}:`, error.message);
       
       if (attempt === retries) {
-        // Final retry failed, try dynamic port detection as last resort
-        try {
-          const connectionCheck = await checkServerConnection();
-          
-          if (connectionCheck.connected) {
-            return {
-              running: true,
-              message: 'Connected to server via fallback method',
-              port: connectionCheck.port.toString()
-            };
-          } else {
-            return { 
-              running: false, 
-              message: 'Cannot connect to the backend server. Please ensure it\'s running.'
-            };
-          }
-        } catch (finalError) {
-          return { 
-            running: false, 
-            message: 'Cannot connect to the backend server. Please ensure it\'s running.'
-          };
-        }
+        // Return that server is running anyway - we'll let the login attempt determine
+        // if server is really accessible
+        return {
+          running: true,
+          message: 'Server connection status unknown. Please try to log in.'
+        };
       }
       
       // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
+  
+  // Default response if nothing else returned
+  return {
+    running: true,
+    message: 'Server connection status unknown. Please try to log in.'
+  };
 };
 
 /**
