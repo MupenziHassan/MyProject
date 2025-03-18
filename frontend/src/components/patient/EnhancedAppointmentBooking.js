@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
+
 import '../../styles/AppointmentBooking.css';
 
 const EnhancedAppointmentBooking = ({ doctorId: propDoctorId, predictionId, testId }) => {

@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import '../styles/Auth.css';
+import axios from 'axios';
 
 const Register = () => {
   const auth = useContext(AuthContext);
@@ -47,18 +48,33 @@ const Register = () => {
       // Remove confirmPassword as it's not needed for API
       const { confirmPassword, ...userData } = formData;
       
-      const result = await auth.register(userData);
+      console.log('Registering with data:', userData);
       
-      if (result.success) {
+      // Direct axios request with error handling
+      const response = await axios.post('/api/v1/auth/register', userData);
+      
+      console.log('Registration response:', response.data);
+      
+      if (response.data.success) {
         // Set registration success state and redirect to login
         auth.setRegistrationSuccess(true);
         navigate('/login');
       } else {
-        setError(result.error || 'Registration failed. Please try again.');
+        setError(response.data.error || 'Registration failed. Please try again.');
       }
     } catch (err) {
       console.error('Registration error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      
+      if (err.response) {
+        // Server responded with error
+        setError(err.response.data?.error || 'Registration failed: ' + (err.response.data?.message || err.message));
+      } else if (err.request) {
+        // Request made but no response
+        setError('Server not responding. Please try again later.');
+      } else {
+        // Setup error
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

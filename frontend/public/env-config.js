@@ -1,5 +1,6 @@
 // Runtime environment configuration
 window.ENV = {
-  REACT_APP_API_URL: 'http://localhost:9091',
-  REACT_APP_API_VERSION: '',
+  REACT_APP_API_URL: 'http://localhost:9090',
+  REACT_APP_API_VERSION: 'v1',
+  REACT_APP_DEBUG: false,
 };

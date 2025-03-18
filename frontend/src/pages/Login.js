@@ -1,74 +1,67 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
+import api from '../services/api';
 import '../styles/Auth.css';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { auth, setAuth } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [serverStatus, setServerStatus] = useState({
-    isOnline: true,
-    message: ''
-  });
-
+  const [error, setError] = useState('');
+  const [serverStatus, setServerStatus] = useState({ isOnline: true, message: '' });
+  
+  const navigate = useNavigate();
+  const { auth, login } = useContext(AuthContext);
+  
   useEffect(() => {
-    // Check server status on mount
-    const checkServerStatus = async () => {
+    // Check if server is running on component mount
+    const checkServer = async () => {
+      setServerStatus({
+        isOnline: false,
+        message: 'Checking server connection...'
+      });
+      
       try {
-        await axios.get('/api/v1/status');
-        setServerStatus({ isOnline: true, message: '' });
+        const result = await api.checkServer();
+        
+        setServerStatus({
+          isOnline: result.success,
+          message: result.success 
+            ? '' // Don't show technical message to users
+            : 'Server connection issue. Please try again later.'
+        });
       } catch (err) {
-        console.error('Server connection error:', err);
-        setServerStatus({ 
-          isOnline: false, 
-          message: 'No response from server. Please check your connection.' 
+        setServerStatus({
+          isOnline: false,
+          message: 'Server connection issue. Please try again later.'
         });
       }
     };
     
-    checkServerStatus();
+    checkServer();
     
-    // If user is already logged in, redirect to dashboard
+    // Check if user is already logged in
     if (auth && auth.isAuthenticated) {
       navigate(`/${auth.role}/dashboard`);
     }
-  }, [navigate, auth]);
+  }, [auth, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    setError('');
     setLoading(true);
+    setError('');
     
     try {
-      const response = await axios.post('/api/v1/auth/login', {
-        email,
-        password
-      });
+      const result = await login({ email, password });
       
-      if (response.data.success) {
-        const userData = response.data.data;
-        
-        // Update auth context
-        setAuth({
-          isAuthenticated: true,
-          user: userData.user,
-          role: userData.user.role
-        });
-        
-        // Store token
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Navigate to role-specific dashboard
-        navigate(`/${userData.user.role}/dashboard`, { replace: true });
+      if (result.success) {
+        navigate(`/${result.role}/dashboard`, { replace: true });
+      } else {
+        setError(result.error || 'Login failed. Please try again.');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }

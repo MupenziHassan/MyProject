@@ -1,50 +1,47 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 
-// Register a new user
-router.post('/register', async (req, res) => {
+// Hardcoded demo users for presentation
+const users = [
+  { id: 1, name: 'Doctor User', email: 'doctor@example.com', password: 'doctor123', role: 'doctor' },
+  { id: 2, name: 'Patient User', email: 'patient@example.com', password: 'patient123', role: 'patient' },
+  { id: 3, name: 'Admin User', email: 'admin@example.com', password: 'admin123', role: 'admin' }
+];
+
+// Login endpoint
+router.post('/login', (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { email, password } = req.body;
+    console.log(`Login attempt: ${email}`);
     
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
+    // Find user by email
+    const user = users.find(u => u.email === email);
     
-    if (userExists) {
-      return res.status(400).json({
+    // Check credentials
+    if (!user || user.password !== password) {
+      console.log('Login failed: Invalid credentials');
+      return res.status(401).json({
         success: false,
-        error: 'User with that email already exists'
+        error: 'Invalid credentials'
       });
     }
     
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password,
-      role: role || 'patient'
-    });
+    // Create simple token
+    const token = `demo-token-${user.id}-${Date.now()}`;
     
-    // Generate token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || 'mysecrettoken',
-      { expiresIn: '30d' }
-    );
+    // Return success with user data (excluding password)
+    const { password: _, ...userData } = user;
     
-    // Don't send password
-    user.password = undefined;
-    
-    res.status(201).json({
+    res.json({
       success: true,
+      token,
       data: {
-        user,
-        token
+        user: userData
       }
     });
+    
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error'
@@ -52,58 +49,46 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login user
-router.post('/login', async (req, res) => {
+router.post('/register', (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password, role } = req.body;
+    console.log(`Register attempt: ${email}`);
     
-    // Check for email and password
-    if (!email || !password) {
+    // Check if user already exists
+    if (users.some(u => u.email === email)) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide email and password'
+        error: 'User with that email already exists'
       });
     }
     
-    // Find user and include password for comparison
-    const user = await User.findOne({ email }).select('+password');
+    // Create new user
+    const newUser = {
+      id: users.length + 1,
+      name,
+      email,
+      password,
+      role: role || 'patient'
+    };
     
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials'
-      });
-    }
+    users.push(newUser);
     
-    // Check if password matches
-    const isMatch = await user.matchPassword(password);
+    // Create token
+    const token = `demo-token-${newUser.id}-${Date.now()}`;
     
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials'
-      });
-    }
+    // Return success with user data (excluding password)
+    const { password: _, ...userData } = newUser;
     
-    // Generate token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || 'mysecrettoken',
-      { expiresIn: '30d' }
-    );
-    
-    // Don't send password
-    user.password = undefined;
-    
-    res.status(200).json({
+    res.status(201).json({
       success: true,
+      token,
       data: {
-        user,
-        token
+        user: userData
       }
     });
+    
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error'

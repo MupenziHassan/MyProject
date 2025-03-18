@@ -1,114 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthContext } from './context/AuthContext';
-import { getCurrentUser } from './services/authService';
+import { AuthProvider } from './contexts/AuthContext';
+import { useContext } from 'react';
+import { AuthContext } from './contexts/AuthContext';
 
-// Layout Components
+// Import layouts
 import PatientLayout from './layouts/PatientLayout';
 import DoctorLayout from './layouts/DoctorLayout';
 import AdminLayout from './layouts/AdminLayout';
 
-// Auth Pages
+// Import pages
 import Login from './pages/Login';
 import Register from './pages/Register';
-
-// Patient Pages
 import PatientDashboard from './pages/patient/PatientDashboard';
-import HealthDashboard from './pages/HealthDashboard';
-import SubmitHealthData from './pages/SubmitHealthData';
-import PatientAppointments from './pages/PatientAppointments';
-import AppointmentSchedule from './pages/AppointmentSchedule';
-import AppointmentDetails from './pages/AppointmentDetails';
-
-// Doctor Pages
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
-
-// Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import SystemSettings from './pages/admin/SystemSettings'; // Import the SystemSettings component
+import HealthAssessment from './pages/patient/HealthAssessment';
+import Appointments from './pages/patient/Appointments';
+import AppointmentDetails from './pages/patient/AppointmentDetails'; // Import the AppointmentDetails component
 
-// Protected Route Component
+// Import debugging component
+import AuthDebug from './components/common/AuthDebug';
+import Logout from './components/common/Logout'; // Import the Logout component
+
+// Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const user = getCurrentUser();
+  const { auth } = useContext(AuthContext);
   
-  if (!user || !user.token) {
+  if (!auth || !auth.isAuthenticated) {
+    console.log('Not authenticated, redirecting to login');
     return <Navigate to="/login" />;
   }
   
-  if (allowedRoles && !allowedRoles.includes(user.user.role)) {
-    return <Navigate to={`/${user.user.role}/dashboard`} />;
+  if (allowedRoles && !allowedRoles.includes(auth.role)) {
+    console.log(`Role ${auth.role} not allowed, redirecting`);
+    return <Navigate to={`/${auth.role}/dashboard`} />;
   }
   
+  console.log('Auth check passed, rendering content');
   return children;
 };
 
-function App() {
-  const [auth, setAuth] = useState({
-    isAuthenticated: false,
-    user: null,
-    role: null
-  });
-  
-  useEffect(() => {
-    const user = getCurrentUser();
-    
-    if (user && user.token) {
-      setAuth({
-        isAuthenticated: true,
-        user: user.user,
-        role: user.user.role
-      });
-    }
-  }, []);
-  
+function AppRoutes() {
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Navigate to="/login" />} />
-          
-          {/* Patient Routes */}
-          <Route path="/patient/*" element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <PatientLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="dashboard" element={<PatientDashboard />} />
-            <Route path="health-dashboard" element={<HealthDashboard />} />
-            <Route path="health-data/submit" element={<SubmitHealthData />} />
-            <Route path="appointments" element={<PatientAppointments />} />
-            <Route path="appointments/schedule" element={<AppointmentSchedule />} />
-            <Route path="appointments/schedule/:doctorId" element={<AppointmentSchedule />} />
-            <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
-          </Route>
-          
-          {/* Doctor Routes */}
-          <Route path="/doctor/*" element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <DoctorLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="dashboard" element={<DoctorDashboard />} />
-            {/* Add more doctor routes as needed */}
-          </Route>
-          
-          {/* Admin Routes */}
-          <Route path="/admin/*" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            {/* Add more admin routes as needed */}
-          </Route>
-          
-          {/* Catch All */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Router>
-    </AuthContext.Provider>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/logout" element={<Logout />} /> {/* Add this new route */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        
+        {/* Patient Routes */}
+        <Route path="/patient/*" element={
+          <ProtectedRoute allowedRoles={['patient']}>
+            <PatientLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="dashboard" element={<PatientDashboard />} />
+          <Route path="health-assessment" element={<HealthAssessment />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
+          {/* Add other patient routes here */}
+        </Route>
+        
+        {/* Doctor Routes */}
+        <Route path="/doctor/*" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="dashboard" element={<DoctorDashboard />} />
+          {/* Add other doctor routes here */}
+        </Route>
+        
+        {/* Admin Routes */}
+        <Route path="/admin/*" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="settings" element={<SystemSettings />} /> {/* Add this line */}
+          {/* Add other admin routes here */}
+        </Route>
+        
+        {/* Catch All */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      
+      {/* Add AuthDebug in development mode */}
+      {process.env.NODE_ENV === 'development' && <AuthDebug />}
+    </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
 

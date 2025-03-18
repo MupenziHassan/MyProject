@@ -2,16 +2,18 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/health-prediction', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-
+    // Here the default fallback is health-prediction-dev
+    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/health-prediction-dev';
+    console.log(`Connecting to MongoDB: ${mongoURI}`);
+    
+    // Modern connection without deprecated options
+    const conn = await mongoose.connect(mongoURI);
+    
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return true;
-  } catch (err) {
-    console.error(`Error connecting to MongoDB: ${err.message}`);
-    process.exit(1);
+  } catch (error) {
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    return false;
   }
 };
 

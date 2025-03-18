@@ -1,5 +1,6 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { NavDropdown } from 'react-bootstrap';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import Header from '../components/common/Header';
 import '../styles/Layout.css';
@@ -24,6 +25,10 @@ const AdminLayout = () => {
         <Header pageTitle={getPageTitle()} />
         <main className="main-content">
           <Outlet />
+          <NavDropdown.Item as={Link} to="/logout">
+            <i className="fas fa-sign-out-alt me-2"></i>
+            Logout
+          </NavDropdown.Item>
         </main>
       </div>
     </div>

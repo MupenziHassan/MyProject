@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import apiService from '../utils/apiConfig';
+import api from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -7,140 +7,138 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  
+  // Add state for auth to fix the 'setAuth is not defined' errors
+  const [auth, setAuth] = useState({
+    isAuthenticated: false,
+    user: null,
+    role: null
+  });
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
-    const user = localStorage.getItem('user');
+    const userJson = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
-    if (user && token) {
-      setCurrentUser(JSON.parse(user));
-      apiService.setAuthToken(token);
+    if (userJson && token) {
+      try {
+        const userData = JSON.parse(userJson);
+        const user = userData.user || userData; // Handle both formats
+        
+        // Set user data
+        setCurrentUser(user);
+        
+        // Set authentication status
+        setAuth({
+          isAuthenticated: true,
+          user: user,
+          role: user.role
+        });
+        
+        // Set API token
+        api.setAuthToken(token);
+        
+        console.log('User restored from localStorage:', user.role);
+      } catch (error) {
+        console.error('Error parsing user data from localStorage', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     
     setLoading(false);
-  }, []);
+  }, []); // Remove setAuth from dependencies
 
   const login = async (credentials) => {
     try {
       setAuthError(null);
-      console.log('Attempting login with:', credentials.email);
       
-      // Use the enhanced loginUser function that tries multiple ports
-      const response = await apiService.loginUser(credentials);
-      console.log('Login response received:', response.data);
+      const response = await api.login(credentials);
       
-      if (response?.data?.success && response?.data?.token) {
-        const { token, data } = response.data;
+      if (response && response.success) {
+        // Get user data (handle both formats)
+        const userData = response.data || {};
+        const user = userData.user || userData;
         
         // Store token and user data
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(userData));
         
         // Set auth token in API service
-        apiService.setAuthToken(token);
+        api.setAuthToken(response.token);
         
         // Update current user state
-        setCurrentUser(data);
+        setCurrentUser(user);
         
-        return { success: true };
-      } else if (response?.data?.token) {
-        // Some APIs might just return token without a success flag
-        const token = response.data.token;
-        const userData = response.data.data || response.data.user || { 
-          id: response.data.id || 'unknown',
-          email: credentials.email 
-        };
+        // Update auth context
+        setAuth({
+          isAuthenticated: true,
+          user: user,
+          role: user.role
+        });
         
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        apiService.setAuthToken(token);
-        setCurrentUser(userData);
-        
-        return { success: true };
+        return { success: true, role: user.role };
       } else {
-        console.warn('Invalid login response format:', response.data);
+        // Handle unexpected response format
         return { 
           success: false, 
-          error: 'Invalid response from server. Please check server logs.' 
+          error: 'Invalid response from server.'
         };
       }
     } catch (error) {
-      console.error('Login error details:', error);
-      
-      // Provide more helpful error messages
-      if (error.response) {
-        // Server responded with error
-        const errorMessage = error.response.data?.error || `Server error: ${error.response.status}`;
-        setAuthError(errorMessage);
-        return { success: false, error: errorMessage };
-      } else if (error.request) {
-        // No response received - this might be due to server not running
-        setAuthError('No response from server. Please check if backend server is running.');
-        return { 
-          success: false, 
-          error: 'No response from server. Please check if backend server is running.' 
-        };
-      } else {
-        // Request setup error
-        const errorMessage = error.message || 'Login failed. Please try again.';
-        setAuthError(errorMessage);
-        return { success: false, error: errorMessage };
-      }
+      setAuthError(error.message || 'An error occurred during login');
+      return { success: false, error: error.message || 'Login failed' };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    apiService.setAuthToken(null);
-    setCurrentUser(null);
-  };
-
-  const register = async (userData) => {
+  async function register(userData) {
     try {
       setAuthError(null);
+      console.log('Attempting registration for:', userData.email);
       
-      // Try with current baseURL first
-      try {
-        const response = await apiService.post('/api/v1/auth/register', userData);
-        setRegistrationSuccess(true);
-        return { success: true, message: 'Registration successful! You can now log in.' };
-      } catch (initialError) {
-        // If it's a connection error, try multiple ports
-        if (!initialError.response) {
-          try {
-            const response = await apiService.tryMultiplePorts('/api/v1/auth/register', {
-              method: 'post',
-              data: userData,
-              headers: { 'Content-Type': 'application/json' },
-              timeout: 5000
-            });
-            setRegistrationSuccess(true);
-            return { success: true, message: 'Registration successful! You can now log in.' };
-          } catch (portError) {
-            throw portError;
-          }
-        } else {
-          throw initialError;
-        }
+      const registerResponse = await api.register(userData);
+      
+      // Fix the unused variable warning by using registerResponse
+      if (registerResponse && registerResponse.success) {
+        return { success: true };
+      } else {
+        // Handle unexpected response format
+        return { 
+          success: false, 
+          error: 'Invalid response from server.'
+        };
       }
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.';
       setAuthError(errorMessage);
       return { success: false, error: errorMessage };
     }
+  }
+
+  const logout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Remove auth token from API service
+    api.setAuthToken(null);
+    
+    // Reset auth state
+    setCurrentUser(null);
+    setAuth({
+      isAuthenticated: false,
+      user: null,
+      role: null
+    });
   };
 
   const value = {
     currentUser,
+    auth,  // Include auth state in the context value
+    authError,
     login,
     logout,
     register,
-    registrationSuccess,
-    setRegistrationSuccess,
-    authError,
     loading
   };
 
