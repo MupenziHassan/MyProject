@@ -20,6 +20,11 @@ import SystemSettings from './pages/admin/SystemSettings'; // Import the SystemS
 import HealthAssessment from './pages/patient/HealthAssessment';
 import Appointments from './pages/patient/Appointments';
 import AppointmentDetails from './pages/patient/AppointmentDetails'; // Import the AppointmentDetails component
+import DoctorAppointments from './pages/doctor/DoctorAppointments';
+import RiskAssessments from './pages/doctor/RiskAssessments';
+import PatientsList from './pages/doctor/PatientsList';
+import PatientDetails from './pages/doctor/PatientDetails';
+import DoctorProfile from './pages/doctor/DoctorProfile';
 
 // Import debugging component
 import AuthDebug from './components/common/AuthDebug';
@@ -73,6 +78,12 @@ function AppRoutes() {
           </ProtectedRoute>
         }>
           <Route path="dashboard" element={<DoctorDashboard />} />
+          <Route path="appointments" element={<DoctorAppointments />} />
+          <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
+          <Route path="assessments" element={<RiskAssessments />} />
+          <Route path="patients" element={<PatientsList />} />
+          <Route path="patients/:patientId" element={<PatientDetails />} />
+          <Route path="profile" element={<DoctorProfile />} />
           {/* Add other doctor routes here */}
         </Route>
         

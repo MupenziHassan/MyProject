@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, Modal, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Table, Button, Form, Modal, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import adminService from '../../services/adminService';
+import api from '../../services/api';
+import PageHeader from '../../components/common/PageHeader';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -30,9 +31,9 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // For presentation, use mock data if API call fails
+      // For presentation, use mock data
       try {
-        const response = await adminService.getAllUsers();
+        const response = await api.get('/api/v1/admin/users');
         setUsers(response.data);
       } catch (apiError) {
         console.error('API error, using mock data:', apiError);
@@ -62,7 +63,7 @@ const UserManagement = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      await adminService.createUser(formData);
+      await api.post('/api/v1/admin/users', formData);
       setShowAddModal(false);
       setFormData({ name: '', email: '', password: '', role: 'patient' });
       fetchUsers();
@@ -75,7 +76,7 @@ const UserManagement = () => {
   const handleEditUser = async (e) => {
     e.preventDefault();
     try {
-      await adminService.updateUser(currentUser._id, formData);
+      await api.put(`/api/v1/admin/users/${currentUser._id}`, formData);
       setShowEditModal(false);
       fetchUsers();
     } catch (err) {
@@ -87,7 +88,7 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await adminService.deleteUser(userId);
+        await api.delete(`/api/v1/admin/users/${userId}`);
         fetchUsers();
       } catch (err) {
         setError('Failed to delete user');
@@ -124,32 +125,17 @@ const UserManagement = () => {
   };
   
   return (
-    <Container fluid className="user-management py-4">
-      <Row className="mb-4 align-items-center">
-        <Col>
-          <div className="d-flex align-items-center">
-            <Button 
-              variant="outline-secondary" 
-              className="me-3"
-              onClick={() => navigate('/admin/dashboard')}
-            >
-              <i className="fas fa-arrow-left"></i>
-            </Button>
-            <div>
-              <h2 className="mb-0">User Management</h2>
-              <p className="text-muted mb-0">Manage system users</p>
-            </div>
-          </div>
-        </Col>
-        <Col xs="auto">
-          <Button 
-            variant="primary"
-            onClick={() => setShowAddModal(true)}
-          >
-            <i className="fas fa-plus me-2"></i> Add New User
-          </Button>
-        </Col>
-      </Row>
+    <Container className="py-4">
+      <PageHeader 
+        title="User Management"
+        subtitle="Manage system users"
+        buttonText="Add New User"
+        buttonIcon="plus"
+        buttonVariant="primary"
+        buttonAction={() => setShowAddModal(true)}
+        showBackButton={true}
+        backPath="/admin/dashboard"
+      />
       
       <Card className="shadow">
         <Card.Header className="bg-white py-3">

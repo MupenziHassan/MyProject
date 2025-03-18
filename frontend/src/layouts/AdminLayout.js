@@ -1,37 +1,20 @@
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { NavDropdown } from 'react-bootstrap';
-import AdminSidebar from '../components/admin/AdminSidebar';
-import Header from '../components/common/Header';
-import '../styles/Layout.css';
+import MainLayout from '../components/layouts/MainLayout';
 
 const AdminLayout = () => {
-  const location = useLocation();
-  
-  // Get current page title based on path
-  const getPageTitle = () => {
-    const path = location.pathname;
-    
-    if (path.includes('/dashboard')) return 'Admin Dashboard';
-    if (path.includes('/users')) return 'User Management';
-    if (path.includes('/settings')) return 'System Settings';
-    return 'Admin Portal';
-  };
-  
+  const navItems = [
+    { path: 'dashboard', label: 'Dashboard', icon: 'tachometer-alt' },
+    { path: 'users', label: 'User Management', icon: 'users-cog' },
+    { path: 'settings', label: 'System Settings', icon: 'cogs' }
+  ];
+
   return (
-    <div className="layout-container">
-      <AdminSidebar />
-      <div className="content-wrapper">
-        <Header pageTitle={getPageTitle()} />
-        <main className="main-content">
-          <Outlet />
-          <NavDropdown.Item as={Link} to="/logout">
-            <i className="fas fa-sign-out-alt me-2"></i>
-            Logout
-          </NavDropdown.Item>
-        </main>
-      </div>
-    </div>
+    <MainLayout 
+      navItems={navItems}
+      navColor="dark"
+      brandText="Ubumuntu System Administration"
+      rolePrefix="admin"
+    />
   );
 };
 

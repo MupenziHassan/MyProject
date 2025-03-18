@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
-const Profile = () => {
+const DoctorProfile = () => {
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  
-  // Initialize state with values from auth context to prevent errors
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -17,20 +15,18 @@ const Profile = () => {
     name: auth?.user?.name || '',
     email: auth?.user?.email || '',
     phone: '',
-    address: '',
-    dateOfBirth: '',
-    gender: '',
-    emergencyContact: '',
+    specialization: '',
+    licenseNumber: '',
+    bio: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
   useEffect(() => {
-    // Load user data
-    const fetchUserProfile = async () => {
+    const fetchDoctorProfile = async () => {
       try {
-        const response = await api.get('/api/v1/patients/profile');
+        const response = await api.get('/api/v1/doctor/profile');
         const userData = response.data;
         
         setFormData(prevData => ({
@@ -38,10 +34,9 @@ const Profile = () => {
           name: userData.name || auth?.user?.name || '',
           email: userData.email || auth?.user?.email || '',
           phone: userData.phone || '',
-          address: userData.address || '',
-          dateOfBirth: userData.dateOfBirth || '',
-          gender: userData.gender || '',
-          emergencyContact: userData.emergencyContact || ''
+          specialization: userData.specialization || '',
+          licenseNumber: userData.licenseNumber || '',
+          bio: userData.bio || ''
         }));
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -54,7 +49,7 @@ const Profile = () => {
       }
     };
 
-    fetchUserProfile();
+    fetchDoctorProfile();
   }, [auth]);
 
   const handleChange = (e) => {
@@ -72,7 +67,7 @@ const Profile = () => {
     setSuccess(null);
 
     try {
-      // Handle password change if provided
+      // Handle password validation
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
           setError('New passwords do not match');
@@ -87,7 +82,7 @@ const Profile = () => {
         }
       }
 
-      // Prepare data for submission (exclude password fields if not changing password)
+      // Prepare data for submission
       const dataToSubmit = { ...formData };
       if (!dataToSubmit.newPassword) {
         delete dataToSubmit.currentPassword;
@@ -96,7 +91,7 @@ const Profile = () => {
       }
 
       // Submit profile update
-      await api.put('/api/v1/patients/profile', dataToSubmit);
+      await api.put('/api/v1/doctor/profile', dataToSubmit);
       
       setSuccess('Profile updated successfully');
       setIsEditing(false);
@@ -108,7 +103,6 @@ const Profile = () => {
     }
   };
 
-  // Logout handler function
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -118,8 +112,8 @@ const Profile = () => {
     <Container className="py-4">
       <Row className="mb-4 align-items-center">
         <Col>
-          <h2>My Profile</h2>
-          <p className="text-muted">Manage your personal information</p>
+          <h2>My Doctor Profile</h2>
+          <p className="text-muted">Manage your professional information</p>
         </Col>
         <Col xs="auto">
           <Button 
@@ -148,11 +142,11 @@ const Profile = () => {
         <Col lg={4} className="mb-4">
           <Card className="text-center">
             <Card.Body>
-              <div className="avatar-circle mx-auto mb-3 bg-primary text-white">
-                {formData.name.charAt(0).toUpperCase() || 'P'}
+              <div className="avatar-circle mx-auto mb-3 bg-success text-white">
+                {formData.name.charAt(0).toUpperCase() || 'D'}
               </div>
-              <h4>{formData.name}</h4>
-              <p className="text-muted">{formData.email}</p>
+              <h4>Dr. {formData.name}</h4>
+              <p className="text-muted">{formData.specialization || 'Oncologist'}</p>
               <Button 
                 variant={isEditing ? "outline-secondary" : "primary"}
                 onClick={() => setIsEditing(!isEditing)}
@@ -182,30 +176,30 @@ const Profile = () => {
                 <Button 
                   variant="link" 
                   className="list-group-item list-group-item-action text-start"
-                  onClick={() => navigate('/patient/dashboard')}
+                  onClick={() => navigate('/doctor/dashboard')}
                 >
                   <i className="fas fa-home me-2"></i> Dashboard
                 </Button>
                 <Button 
                   variant="link" 
                   className="list-group-item list-group-item-action text-start"
-                  onClick={() => navigate('/patient/health-assessment')}
-                >
-                  <i className="fas fa-clipboard-check me-2"></i> Health Assessment
-                </Button>
-                <Button 
-                  variant="link" 
-                  className="list-group-item list-group-item-action text-start"
-                  onClick={() => navigate('/patient/appointments')}
+                  onClick={() => navigate('/doctor/appointments')}
                 >
                   <i className="fas fa-calendar-alt me-2"></i> Appointments
                 </Button>
                 <Button 
                   variant="link" 
                   className="list-group-item list-group-item-action text-start"
-                  onClick={() => navigate('/patient/medical-records')}
+                  onClick={() => navigate('/doctor/patients')}
                 >
-                  <i className="fas fa-file-medical me-2"></i> Medical Records
+                  <i className="fas fa-users me-2"></i> My Patients
+                </Button>
+                <Button 
+                  variant="link" 
+                  className="list-group-item list-group-item-action text-start"
+                  onClick={() => navigate('/doctor/assessments')}
+                >
+                  <i className="fas fa-clipboard-check me-2"></i> Risk Assessments
                 </Button>
               </div>
             </Card.Body>
@@ -261,40 +255,11 @@ const Profile = () => {
                   </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Date of Birth</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Gender</Form.Label>
-                      <Form.Select
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Emergency Contact</Form.Label>
+                      <Form.Label>Specialization</Form.Label>
                       <Form.Control
                         type="text"
-                        name="emergencyContact"
-                        value={formData.emergencyContact}
+                        name="specialization"
+                        value={formData.specialization}
                         onChange={handleChange}
                         disabled={!isEditing}
                       />
@@ -303,12 +268,25 @@ const Profile = () => {
 
                   <Col md={12}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Address</Form.Label>
+                      <Form.Label>License Number</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="licenseNumber"
+                        value={formData.licenseNumber}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Professional Bio</Form.Label>
                       <Form.Control
                         as="textarea"
-                        rows={2}
-                        name="address"
-                        value={formData.address}
+                        rows={4}
+                        name="bio"
+                        value={formData.bio}
                         onChange={handleChange}
                         disabled={!isEditing}
                       />
@@ -400,4 +378,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default DoctorProfile;
