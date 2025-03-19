@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import DashboardStats from '../../components/common/DashboardStats';
 import PageHeader from '../../components/common/PageHeader';
 
 const PatientDashboard = () => {
-  const { auth } = useContext(AuthContext); // Remove unused logout from destructuring
+  const { auth } = useAuth(); // Remove unused logout from destructuring
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();

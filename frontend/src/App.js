@@ -47,71 +47,76 @@ import Analytics from './pages/admin/Analytics';
 import AuthDebug from './components/common/AuthDebug';
 import Logout from './components/common/Logout';
 
+import { AuthProvider } from './contexts/AuthContext';
+
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Navigate to="/login" />} />
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/logout" element={<Logout />} />
+          
+          {/* Patient Routes */}
+          <Route path="/patient/*" element={
+            <ProtectedRoute allowedRoles={['patient']}>
+              <PatientLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<PatientDashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="health-assessment" element={<CancerRiskAssessment />} />
+            <Route path="assessments" element={<AssessmentHistory />} />
+            <Route path="assessments/:assessmentId" element={<AssessmentDetail />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="appointments/schedule" element={<AppointmentSchedule />} />
+            <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
+            <Route path="medical-records" element={<MedicalRecords />} />
+            <Route path="medical-records/:recordId" element={<MedicalRecordDetail />} />
+            <Route path="health-records" element={<HealthRecords />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+          </Route>
+
+          {/* Doctor Routes */}
+          <Route path="/doctor/*" element={
+            <ProtectedRoute allowedRoles={['doctor']}>
+              <DoctorLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<DoctorDashboard />} />
+            <Route path="appointments" element={<DoctorAppointments />} />
+            <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
+            <Route path="assessments" element={<RiskAssessments />} />
+            <Route path="patients" element={<PatientsList />} />
+            <Route path="patients/:patientId" element={<PatientDetails />} />
+            <Route path="patients/:patientId/treatment-plan" element={<TreatmentPlan />} />
+            <Route path="profile" element={<DoctorProfile />} />
+            <Route path="patients/:patientId/new-assessment" element={<PatientAssessment />} />
+            <Route path="new-assessment" element={<PatientSelection />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="settings" element={<SystemSettings />} />
+            <Route path="analytics" element={<Analytics />} />
+          </Route>
+
+          {/* Catch All */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
         
-        {/* Patient Routes */}
-        <Route path="/patient/*" element={
-          <ProtectedRoute allowedRoles={['patient']}>
-            <PatientLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="dashboard" element={<PatientDashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="health-assessment" element={<CancerRiskAssessment />} />
-          <Route path="assessments" element={<AssessmentHistory />} />
-          <Route path="assessments/:assessmentId" element={<AssessmentDetail />} />
-          <Route path="appointments" element={<Appointments />} />
-          <Route path="appointments/schedule" element={<AppointmentSchedule />} />
-          <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
-          <Route path="medical-records" element={<MedicalRecords />} />
-          <Route path="medical-records/:recordId" element={<MedicalRecordDetail />} />
-          <Route path="health-records" element={<HealthRecords />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-        </Route>
-
-        {/* Doctor Routes */}
-        <Route path="/doctor/*" element={
-          <ProtectedRoute allowedRoles={['doctor']}>
-            <DoctorLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="dashboard" element={<DoctorDashboard />} />
-          <Route path="appointments" element={<DoctorAppointments />} />
-          <Route path="appointments/:appointmentId" element={<AppointmentDetails />} />
-          <Route path="assessments" element={<RiskAssessments />} />
-          <Route path="patients" element={<PatientsList />} />
-          <Route path="patients/:patientId" element={<PatientDetails />} />
-          <Route path="patients/:patientId/treatment-plan" element={<TreatmentPlan />} />
-          <Route path="profile" element={<DoctorProfile />} />
-          <Route path="patients/:patientId/new-assessment" element={<PatientAssessment />} />
-          <Route path="new-assessment" element={<PatientSelection />} />
-        </Route>
-
-        {/* Admin Routes */}
-        <Route path="/admin/*" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="settings" element={<SystemSettings />} />
-          <Route path="analytics" element={<Analytics />} />
-        </Route>
-
-        {/* Catch All */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-      
-      {/* Add AuthDebug in development mode */}
-      {process.env.NODE_ENV === 'development' && <AuthDebug />}
+        {/* Move AuthDebug inside AuthProvider context to access auth data */}
+        {process.env.NODE_ENV === 'development' && <AuthDebug />}
+      </AuthProvider>
     </Router>
   );
 }

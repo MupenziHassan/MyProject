@@ -1,30 +1,34 @@
-import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * ProtectedRoute component to handle authentication and role-based access control
+ */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { auth } = useContext(AuthContext);
-  
+  const { currentUser, loading } = useAuth();
+  const location = useLocation();
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
+
   // Check if user is authenticated
-  if (!auth.isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  const isAuthenticated = !!currentUser;
   
-  // Check if user role is allowed
-  if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
-    // Redirect to the appropriate dashboard based on role
-    if (auth.role === 'patient') {
-      return <Navigate to="/patient/dashboard" replace />;
-    } else if (auth.role === 'doctor') {
-      return <Navigate to="/doctor/dashboard" replace />;
-    } else if (auth.role === 'admin') {
-      return <Navigate to="/admin/dashboard" replace />;
-    } else {
-      return <Navigate to="/login" replace />;
-    }
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
-  
-  // If authenticated and authorized, render the component
+
+  // If roles are specified, check if user has required role
+  if (allowedRoles.length > 0 && !allowedRoles.includes(currentUser.role)) {
+    // Redirect to appropriate dashboard based on role
+    return <Navigate to={`/${currentUser.role}/dashboard`} replace />;
+  }
+
+  // If user is authenticated and has the required role, render the protected content
   return children;
 };
 

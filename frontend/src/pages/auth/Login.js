@@ -1,28 +1,31 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, authError } = useContext(AuthContext);
+  const [loginError, setLoginError] = useState('');
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+    setLoginError('');
+
     try {
-      await login(formData.email, formData.password);
-      // Redirect will be handled by the AuthContext
+      console.log('Attempting login with:', email);
+      await login(email, password);
+      
+      // Determine redirect based on user role
+      const userRole = localStorage.getItem('userRole') || 'patient';
+      navigate(`/${userRole}/dashboard`);
     } catch (error) {
-      console.error("Login failed", error);
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Failed to log in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -39,8 +42,8 @@ const Login = () => {
           
           <Card className="shadow-sm border-0">
             <Card.Body className="p-4">
-              {authError && (
-                <Alert variant="danger">{authError}</Alert>
+              {loginError && (
+                <Alert variant="danger">{loginError}</Alert>
               )}
               
               <Form onSubmit={handleSubmit}>
@@ -49,8 +52,8 @@ const Login = () => {
                   <Form.Control 
                     type="email"
                     name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
                     required
                   />
@@ -61,8 +64,8 @@ const Login = () => {
                   <Form.Control 
                     type="password"
                     name="password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
                   />
