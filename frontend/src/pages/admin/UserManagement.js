@@ -123,6 +123,11 @@ const UserManagement = () => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Actually use navigate in the component
+  const handleBackToDashboard = () => {
+    navigate('/admin/dashboard');
+  };
   
   return (
     <Container className="py-4">
@@ -400,6 +405,17 @@ const UserManagement = () => {
           background-color: rgba(0, 0, 0, 0.02);
         }
       `}</style>
+
+      {/* Add a back button at the bottom that uses navigate */}
+      <div className="text-center mt-4">
+        <Button 
+          variant="outline-secondary"
+          onClick={handleBackToDashboard}
+        >
+          <i className="fas fa-arrow-left me-2"></i>
+          Back to Dashboard
+        </Button>
+      </div>
     </Container>
   );
 };

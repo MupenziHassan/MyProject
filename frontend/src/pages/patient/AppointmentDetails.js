@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Row, Col, Button, Badge, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import PageHeader from '../../components/common/PageHeader';
 
 const AppointmentDetails = () => {
   const { appointmentId } = useParams();
-  const navigate = useNavigate();
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [successMessage, setSuccessMessage] = useState(null);
+  const navigate = useNavigate();
+  
   useEffect(() => {
-    const fetchAppointmentDetails = async () => {
+    const fetchAppointment = async () => {
       try {
-        // Try to fetch from API
         const response = await api.get(`/api/v1/patient/appointments/${appointmentId}`);
         setAppointment(response.data);
       } catch (error) {
@@ -21,74 +22,66 @@ const AppointmentDetails = () => {
         // Mock data for presentation
         setAppointment({
           id: appointmentId,
-          doctorName: 'Dr. Smith',
-          doctorSpecialty: 'Cardiologist',
-          date: '2023-07-22T14:30:00',
-          status: 'upcoming',
-          location: 'Main Hospital, Room 305',
-          notes: 'Follow-up appointment for heart condition',
-          doctorProfilePic: 'https://randomuser.me/api/portraits/men/72.jpg',
-          duration: 30,
-          reason: 'Follow-up consultation'
+          doctorName: 'Dr. Mugisha',
+          doctorSpecialty: 'Oncologist',
+          date: new Date().toISOString(),
+          time: '10:30 AM',
+          status: 'confirmed',
+          location: 'Ubumuntu Clinic, Room 305',
+          notes: 'Follow-up cancer screening appointment',
+          reason: 'Cancer screening',
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
         });
       } finally {
         setLoading(false);
       }
     };
-
-    fetchAppointmentDetails();
+    
+    fetchAppointment();
   }, [appointmentId]);
-
-  const formatDate = (dateString) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  const formatTime = (dateString) => {
-    const options = { hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleTimeString([], options);
-  };
-
-  const getStatusBadge = (status) => {
-    let variant;
-    let label;
-    
-    switch(status) {
-      case 'upcoming':
-        variant = 'primary';
-        label = 'Upcoming';
-        break;
-      case 'completed':
-        variant = 'success';
-        label = 'Completed';
-        break;
-      case 'cancelled':
-        variant = 'danger';
-        label = 'Cancelled';
-        break;
-      default:
-        variant = 'secondary';
-        label = status;
-    }
-    
-    return <Badge bg={variant}>{label}</Badge>;
-  };
-
+  
   const handleCancelAppointment = async () => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
       try {
-        // Call API to cancel
+        setLoading(true);
+        // Call API to cancel the appointment
         await api.put(`/api/v1/patient/appointments/${appointmentId}/cancel`);
         
         // Update local state
-        setAppointment({...appointment, status: 'cancelled'});
-        
-      } catch (error) {
+        setAppointment(prev => ({
+          ...prev,
+          status: 'cancelled'
+        }));
+        setSuccessMessage('Appointment cancelled successfully');
+      } catch (err) {
         setError('Failed to cancel appointment. Please try again.');
+      } finally {
+        setLoading(false);
       }
     }
   };
-
+  
+  const getStatusBadge = (status) => {
+    let variant;
+    switch(status) {
+      case 'confirmed':
+        variant = 'success';
+        break;
+      case 'pending':
+        variant = 'warning';
+        break;
+      case 'cancelled':
+        variant = 'danger';
+        break;
+      case 'completed':
+        variant = 'info';
+        break;
+      default:
+        variant = 'secondary';
+    }
+    return <Badge bg={variant}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
+  };
+  
   if (loading) {
     return (
       <Container className="py-4 text-center">
@@ -99,22 +92,43 @@ const AppointmentDetails = () => {
       </Container>
     );
   }
-
-  return (
-    <Container className="py-4">
-      <div className="d-flex align-items-center mb-4">
+  
+  if (!appointment) {
+    return (
+      <Container className="py-4">
+        <Alert variant="danger">
+          Appointment not found or could not be loaded
+        </Alert>
         <Button 
-          variant="outline-secondary" 
-          className="me-3"
+          variant="primary"
           onClick={() => navigate('/patient/appointments')}
         >
-          <i className="fas fa-arrow-left"></i>
+          Back to Appointments
         </Button>
-        <div>
-          <h2 className="mb-0">Appointment Details</h2>
-          <p className="text-muted mb-0">View your appointment information</p>
-        </div>
-      </div>
+      </Container>
+    );
+  }
+  
+  const appointmentDate = new Date(appointment.date);
+  const formattedDate = appointmentDate.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const formattedTime = appointment.time || appointmentDate.toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  
+  return (
+    <Container className="py-4">
+      <PageHeader
+        title="Appointment Details"
+        subtitle="View your appointment information"
+        showBackButton={true}
+        backPath="/patient/appointments"
+      />
       
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError(null)}>
@@ -122,134 +136,132 @@ const AppointmentDetails = () => {
         </Alert>
       )}
       
-      <Card className="shadow-sm mb-4">
+      {successMessage && (
+        <Alert variant="success" dismissible onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      )}
+      
+      <Card className="shadow-sm">
+        <Card.Header className="bg-white d-flex justify-content-between align-items-center">
+          <h5 className="mb-0">Appointment Information</h5>
+          {getStatusBadge(appointment.status)}
+        </Card.Header>
         <Card.Body>
           <Row>
-            <Col md={2} className="text-center mb-4 mb-md-0">
-              <div className="appointment-date p-3 rounded bg-light mb-3">
-                <div className="month">{new Date(appointment.date).toLocaleString('default', { month: 'short' })}</div>
-                <div className="day">{new Date(appointment.date).getDate()}</div>
-                <div className="time">{formatTime(appointment.date)}</div>
+            <Col md={6}>
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Date & Time</h6>
+                <div className="d-flex align-items-center">
+                  <div className="appointment-icon me-3 bg-primary text-white">
+                    <i className="fas fa-calendar-alt"></i>
+                  </div>
+                  <div>
+                    <div className="fw-bold">{formattedDate}</div>
+                    <div>{formattedTime}</div>
+                  </div>
+                </div>
               </div>
+              
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Doctor</h6>
+                <div className="d-flex align-items-center">
+                  <div className="appointment-icon me-3 bg-success text-white">
+                    <i className="fas fa-user-md"></i>
+                  </div>
+                  <div>
+                    <div className="fw-bold">{appointment.doctorName}</div>
+                    <div>{appointment.doctorSpecialty}</div>
+                  </div>
+                </div>
+              </div>
+              
               <div>
-                {getStatusBadge(appointment.status)}
+                <h6 className="text-muted mb-2">Location</h6>
+                <div className="d-flex align-items-center">
+                  <div className="appointment-icon me-3 bg-info text-white">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div>
+                    <div className="fw-bold">{appointment.location}</div>
+                  </div>
+                </div>
               </div>
             </Col>
             
-            <Col md={10}>
-              <div className="d-md-flex justify-content-between mb-4">
-                <div>
-                  <h4>{appointment.doctorName}</h4>
-                  <p className="text-muted">{appointment.doctorSpecialty}</p>
-                </div>
-                
-                <div>
-                  {appointment.status === 'upcoming' && (
-                    <Button 
-                      variant="outline-danger"
-                      onClick={handleCancelAppointment}
-                    >
-                      <i className="fas fa-times-circle me-2"></i>
-                      Cancel Appointment
-                    </Button>
-                  )}
-                </div>
+            <Col md={6}>
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Reason for Visit</h6>
+                <p>{appointment.reason || 'Not specified'}</p>
               </div>
               
-              <hr />
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Notes</h6>
+                <p>{appointment.notes || 'No additional notes'}</p>
+              </div>
               
-              <Row className="mt-4">
-                <Col md={6} className="mb-4">
-                  <h5 className="mb-3">Appointment Information</h5>
-                  
-                  <div className="mb-3">
-                    <div className="text-muted small">Date</div>
-                    <div className="d-flex align-items-center">
-                      <i className="far fa-calendar me-2 text-primary"></i>
-                      <strong>{formatDate(appointment.date)}</strong>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <div className="text-muted small">Time</div>
-                    <div className="d-flex align-items-center">
-                      <i className="far fa-clock me-2 text-primary"></i>
-                      <strong>{formatTime(appointment.date)}</strong>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <div className="text-muted small">Duration</div>
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-hourglass-half me-2 text-primary"></i>
-                      <strong>{appointment.duration} minutes</strong>
-                    </div>
-                  </div>
-                </Col>
-                
-                <Col md={6} className="mb-4">
-                  <h5 className="mb-3">Location Details</h5>
-                  
-                  <div className="mb-3">
-                    <div className="text-muted small">Address</div>
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-map-marker-alt me-2 text-primary"></i>
-                      <strong>{appointment.location}</strong>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <div className="text-muted small">Reason for Visit</div>
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-file-medical-alt me-2 text-primary"></i>
-                      <strong>{appointment.reason}</strong>
-                    </div>
-                  </div>
-                </Col>
-              </Row>
-              
-              <hr />
-              
-              <div className="mt-4">
-                <h5 className="mb-3">Notes</h5>
-                <p>{appointment.notes || 'No additional notes.'}</p>
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Created On</h6>
+                <p>{new Date(appointment.createdAt).toLocaleDateString()}</p>
               </div>
             </Col>
           </Row>
+          
+          <div className="mt-4 text-center">
+            {appointment.status === 'confirmed' || appointment.status === 'pending' ? (
+              <>
+                <Button 
+                  variant="danger" 
+                  onClick={handleCancelAppointment} 
+                  className="me-2"
+                  disabled={loading}
+                >
+                  <i className="fas fa-times-circle me-2"></i>
+                  Cancel Appointment
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => navigate(`/patient/appointments/reschedule/${appointmentId}`)}
+                >
+                  <i className="fas fa-calendar-alt me-2"></i>
+                  Reschedule
+                </Button>
+              </>
+            ) : appointment.status === 'cancelled' ? (
+              <Button 
+                variant="primary" 
+                onClick={() => navigate('/patient/appointments/schedule')}
+              >
+                <i className="fas fa-calendar-plus me-2"></i>
+                Schedule New Appointment
+              </Button>
+            ) : (
+              <>
+                <p className="text-success mb-3">
+                  <i className="fas fa-check-circle me-2"></i>
+                  This appointment has been completed
+                </p>
+                <Button 
+                  variant="primary" 
+                  onClick={() => navigate('/patient/appointments/schedule')}
+                >
+                  <i className="fas fa-calendar-plus me-2"></i>
+                  Schedule New Appointment
+                </Button>
+              </>
+            )}
+          </div>
         </Card.Body>
       </Card>
       
-      <div className="text-center">
-        <Button 
-          variant="primary" 
-          onClick={() => navigate('/patient/appointments')}
-        >
-          Back to Appointments
-        </Button>
-      </div>
-
       <style jsx="true">{`
-        .appointment-date {
-          background-color: #f8f9fa;
-          border-radius: 0.5rem;
-        }
-        
-        .appointment-date .month {
-          font-size: 0.9rem;
-          text-transform: uppercase;
-          font-weight: bold;
-          color: #6c757d;
-        }
-        
-        .appointment-date .day {
-          font-size: 1.8rem;
-          font-weight: bold;
-          line-height: 1.2;
-        }
-        
-        .appointment-date .time {
-          font-size: 0.9rem;
-          color: #6c757d;
+        .appointment-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       `}</style>
     </Container>

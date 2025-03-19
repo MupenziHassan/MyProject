@@ -26,23 +26,19 @@ app.get('/api/health-check', (req, res) => {
   });
 });
 
-// Load routes
-try {
-  const authRoutes = require('./routes/authRoutes');
-  app.use('/api/v1/auth', authRoutes);
-  // ...existing code for other routes...
-} catch (error) {
-  console.log(`Warning: Could not load auth routes: ${error.message}`);
-}
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const patientRoutes = require('./routes/patientRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
-// Add the admin routes
-try {
-  const adminRoutes = require('./routes/adminRoutes');
-  app.use('/api/v1/admin', adminRoutes);
-  console.log('Admin routes loaded');
-} catch (error) {
-  console.log(`Warning: Could not load admin routes: ${error.message}`);
-}
+// Use routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/patient', patientRoutes);
+app.use('/api/v1/doctor', doctorRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Simple error handler
 app.use((err, req, res, next) => {

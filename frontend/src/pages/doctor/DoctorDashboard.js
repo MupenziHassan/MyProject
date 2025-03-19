@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import DashboardStats from '../../components/common/DashboardStats';
 import PageHeader from '../../components/common/PageHeader';
 
 const DoctorDashboard = () => {
-  const { auth, logout } = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -86,11 +86,6 @@ const DoctorDashboard = () => {
     fetchDashboardData();
   }, []);
   
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-  
   const getRiskBadgeVariant = (risk) => {
     switch(risk) {
       case 'low': return 'success';
@@ -126,246 +121,72 @@ const DoctorDashboard = () => {
     <Container className="py-4">
       <PageHeader 
         title="Doctor Dashboard"
-        subtitle={`Welcome, Dr. ${auth?.user?.name || 'User'} - Manage your patients and appointments at Ubumuntu Clinic`}
-        buttonText="Logout"
-        buttonIcon="sign-out-alt"
-        buttonVariant="outline-danger"
-        buttonAction={handleLogout}
+        subtitle={`Welcome, Dr. ${auth?.user?.name || 'User'} - Manage patients and risk assessments`}
+        buttonText="New Patient Assessment"
+        buttonIcon="plus-circle"
+        buttonVariant="primary"
+        buttonAction={() => navigate('/doctor/new-assessment')}
       />
       
-      {/* Use the shared DashboardStats component */}
-      <DashboardStats 
-        stats={[
-          {
-            title: "Today's Appointments",
-            value: dashboardData?.todayAppointments || 0,
-            icon: 'calendar-day',
-            color: 'success',
-            link: '/doctor/appointments',
-            linkText: 'View schedule'
-          },
-          {
-            title: 'Pending Assessments',
-            value: dashboardData?.pendingAssessments || 0,
-            icon: 'clipboard-list',
-            color: 'warning',
-            link: '/doctor/assessments',
-            linkText: 'Review assessments'
-          },
-          {
-            title: 'Total Patients',
-            value: dashboardData?.totalPatients || 0,
-            icon: 'users',
-            color: 'primary',
-            link: '/doctor/patients',
-            linkText: 'View patients'
-          },
-          {
-            title: 'High Risk Cases',
-            value: dashboardData?.highRiskPatients || 0,
-            icon: 'exclamation-triangle',
-            color: 'danger',
-            link: '/doctor/assessments?status=high-risk',
-            linkText: 'Prioritize cases'
-          }
-        ]}
-      />
-      
-      <Row>
-        <Col lg={7} className="mb-4">
-          <Card className="shadow-sm">
-            <Card.Header className="bg-white">
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Upcoming Appointments</h5>
-                <Button 
-                  variant="outline-success" 
-                  size="sm"
-                  onClick={() => navigate('/doctor/appointments')}
-                >
-                  View All
-                </Button>
-              </div>
+      <Row className="mb-4">
+        <Col md={6} className="mb-4">
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Recent Patient Assessments</h5>
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={() => navigate('/doctor/assessments')}
+              >
+                View All
+              </Button>
             </Card.Header>
             <Card.Body>
-              {dashboardData?.upcomingAppointments?.length === 0 ? (
-                <div className="text-center py-4">
-                  <i className="fas fa-calendar-times text-muted fa-3x mb-3"></i>
-                  <p>No upcoming appointments</p>
-                </div>
-              ) : (
-                dashboardData?.upcomingAppointments?.map(appointment => (
-                  <Card 
-                    key={appointment.id} 
-                    className="mb-3 appointment-card border-start border-5 border-success"
-                  >
-                    <Card.Body>
-                      <Row className="align-items-center">
-                        <Col md={2} className="text-center mb-3 mb-md-0">
-                          <div className="appointment-date p-2 rounded bg-light">
-                            <div className="day">{new Date(appointment.date).getDate()}</div>
-                            <div className="month">{new Date(appointment.date).toLocaleString('default', { month: 'short' })}</div>
-                            <div className="time">{new Date(appointment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                          </div>
-                        </Col>
-                        <Col md={7} className="mb-3 mb-md-0">
-                          <h6 className="mb-1">
-                            <Link to={`/doctor/patients/${appointment.patientId}`} className="text-decoration-none">
-                              {appointment.patientName}
-                            </Link>
-                          </h6>
-                          <p className="text-muted small mb-1">
-                            <i className="fas fa-info-circle me-2"></i>
-                            {appointment.reason}
-                          </p>
-                          <Badge bg={getStatusBadgeVariant(appointment.status)}>
-                            {appointment.status}
-                          </Badge>
-                        </Col>
-                        <Col md={3} className="text-md-end">
-                          <Button 
-                            variant="outline-success" 
-                            size="sm" 
-                            className="me-2"
-                            onClick={() => navigate(`/doctor/appointments/${appointment.id}`)}
-                          >
-                            <i className="fas fa-eye me-1"></i> Details
-                          </Button>
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                ))
-              )}
+              {/* Assessment content would go here */}
+              <div className="text-center py-3">
+                <p className="text-muted">Recent patient assessments will appear here</p>
+              </div>
             </Card.Body>
-            <Card.Footer className="bg-white text-center">
-              <Button 
-                variant="success" 
-                onClick={() => navigate('/doctor/appointments')}
-              >
-                Manage All Appointments
-              </Button>
-            </Card.Footer>
           </Card>
         </Col>
         
-        <Col lg={5} className="mb-4">
-          <Card className="shadow-sm">
-            <Card.Header className="bg-white">
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Recent Risk Assessments</h5>
-                <Button 
-                  variant="outline-warning" 
-                  size="sm"
-                  onClick={() => navigate('/doctor/assessments')}
-                >
-                  View All
-                </Button>
-              </div>
+        <Col md={6} className="mb-4">
+          <Card className="shadow-sm h-100">
+            <Card.Header className="bg-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">High-Risk Patients</h5>
+              <Button 
+                variant="outline-danger" 
+                size="sm"
+                onClick={() => navigate('/doctor/patients?risk=high')}
+              >
+                View All
+              </Button>
             </Card.Header>
             <Card.Body>
-              {dashboardData?.recentAssessments?.length === 0 ? (
-                <div className="text-center py-4">
-                  <i className="fas fa-clipboard-check text-muted fa-3x mb-3"></i>
-                  <p>No recent assessments</p>
-                </div>
-              ) : (
-                dashboardData?.recentAssessments?.map(assessment => (
-                  <Card 
-                    key={assessment.id} 
-                    className="mb-3 assessment-card border-start border-5 border-warning"
-                  >
-                    <Card.Body>
-                      <Row className="align-items-center">
-                        <Col xs={12} lg={8}>
-                          <h6 className="mb-1">
-                            <Link to={`/doctor/patients/${assessment.patientId}`} className="text-decoration-none">
-                              {assessment.patientName}
-                            </Link>
-                          </h6>
-                          <p className="text-muted small mb-1">
-                            <i className="fas fa-calendar me-2"></i>
-                            {new Date(assessment.date).toLocaleString()}
-                          </p>
-                          <div className="d-flex align-items-center">
-                            <Badge bg={getRiskBadgeVariant(assessment.riskLevel)} className="me-2">
-                              {assessment.riskLevel} risk
-                            </Badge>
-                            <Badge bg={getStatusBadgeVariant(assessment.status)}>
-                              {assessment.status}
-                            </Badge>
-                          </div>
-                        </Col>
-                        <Col xs={12} lg={4} className="text-lg-end mt-3 mt-lg-0">
-                          <Button 
-                            variant={assessment.status === 'pending' ? 'warning' : 'outline-secondary'} 
-                            size="sm"
-                            onClick={() => navigate(`/doctor/assessments/${assessment.id}`)}
-                          >
-                            {assessment.status === 'pending' ? (
-                              <>
-                                <i className="fas fa-stethoscope me-1"></i> Review
-                              </>
-                            ) : (
-                              <>
-                                <i className="fas fa-eye me-1"></i> View
-                              </>
-                            )}
-                          </Button>
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                ))
-              )}
+              {/* High-risk patients content would go here */}
+              <div className="text-center py-3">
+                <p className="text-muted">High-risk patients will appear here</p>
+              </div>
             </Card.Body>
-            <Card.Footer className="bg-white text-center">
-              <Button 
-                variant="warning" 
-                className="me-2"
-                onClick={() => navigate('/doctor/assessments?status=pending')}
-              >
-                Review Pending Assessments
-              </Button>
-            </Card.Footer>
           </Card>
         </Col>
       </Row>
       
-      <style jsx="true">{`
-        .dashboard-stat-card {
-          border: none;
-          border-radius: 0.5rem;
-          transition: transform 0.2s ease;
-        }
-        .dashboard-stat-card:hover {
-          transform: translateY(-5px);
-        }
-        .stat-icon {
-          opacity: 0.8;
-        }
-        .appointment-date {
-          background-color: #f8f9fa;
-          border-radius: 0.5rem;
-        }
-        .appointment-date .day {
-          font-size: 1.5rem;
-          font-weight: bold;
-        }
-        .appointment-date .month {
-          font-size: 0.9rem;
-          text-transform: uppercase;
-        }
-        .appointment-date .time {
-          font-size: 0.9rem;
-          color: #6c757d;
-        }
-        .appointment-card, .assessment-card {
-          transition: box-shadow 0.2s;
-        }
-        .appointment-card:hover, .assessment-card:hover {
-          box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
-        }
-      `}</style>
+      <Row>
+        <Col>
+          <Card className="shadow-sm">
+            <Card.Header className="bg-white">
+              <h5 className="mb-0">Upcoming Appointments</h5>
+            </Card.Header>
+            <Card.Body>
+              {/* Appointments content would go here */}
+              <div className="text-center py-3">
+                <p className="text-muted">Upcoming appointments will appear here</p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </Container>
   );
 };

@@ -29,8 +29,55 @@ const UserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  // Additional patient-specific fields
+  height: {
+    type: Number
+  },
+  weight: {
+    type: Number
+  },
+  dateOfBirth: {
+    type: Date
+  },
+  contactNumber: {
+    type: String
+  },
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String
+  },
+  emergencyContact: {
+    name: String,
+    relationship: String,
+    contactNumber: String
+  },
+  medicalHistory: {
+    allergies: [String],
+    chronicConditions: [String],
+    currentMedications: [String],
+    pastSurgeries: [String]
+  },
+  assessments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Assessment'
+    }
+  ],
+  appointments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Appointment'
+    }
+  ],
+  notifications: {
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: false }
   }
-});
+}, { timestamps: true });
 
 // Hash password before saving
 UserSchema.pre('save', async function(next) {
@@ -45,6 +92,6 @@ UserSchema.pre('save', async function(next) {
 // Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
-};
+});
 
 module.exports = mongoose.model('User', UserSchema);
