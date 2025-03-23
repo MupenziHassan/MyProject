@@ -1,40 +1,27 @@
 {
-  "name": "health-prediction-system",
+  "name": "health-prediction-system-backend",
   "version": "1.0.0",
-  "description": "Health Prediction System",
-  "main": "index.js",
+  "description": "Backend for Health Prediction System",
+  "main": "server.js",
   "scripts": {
-    "start": "node scripts/start.js",
-    "server": "nodemon backend/server.js",
-    "mock-server": "nodemon backend/config/mockBackend.js",
-    "client": "npm start --prefix frontend",
-    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "mock-dev": "concurrently \"npm run mock-server\" \"npm run client\"",
-    "start-frontend": "cd frontend && npm start",
-    "start:backend": "cd backend && npm start",
-    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "cd backend && npm test",
-    "test:frontend": "cd frontend && npm test",
-    "migrate": "cd backend && node src/database/migrations/migrationRunner.js",
-    "migrate:rollback": "cd backend && node src/database/migrations/migrationRunner.js rollback",
-    "build": "cd frontend && npm run build",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:build": "docker-compose build",
-    "e2e": "cd frontend && npx cypress open",
-    "check-server": "node serverCheck.js"
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^8.2.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "morgan": "^1.10.0",
-    "nodemon": "^2.0.22"
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12"
   },
   "devDependencies": {
-    "eslint-plugin-cypress": "^4.2.0"
+    "concurrently": "^6.3.0",
+    "nodemon": "^2.0.14"
   }
 }

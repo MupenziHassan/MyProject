@@ -156,7 +156,7 @@ const Register = () => {
           
           <div className="text-center mt-4">
             <p className="text-muted small">
-              &copy; 2023 Ubumuntu Clinic Cancer Prediction System<br />
+              &copy; 2025 Ubumuntu Clinic Cancer Prediction System<br />
               University of Kigali
             </p>
           </div>

@@ -36,7 +36,7 @@ const Login = () => {
       <Row className="justify-content-center">
         <Col md={8} lg={6} xl={5}>
           <div className="text-center mb-4">
-            <h2 className="text-primary fw-bold">Ubumuntu Cancer Prediction</h2>
+            <h2 className="text-primary fw-bold">Ubumuntu Cancer Risk Prediction System</h2>
             <p className="text-muted">Sign in to access your account</p>
           </div>
           
@@ -94,7 +94,7 @@ const Login = () => {
           
           <div className="text-center mt-4">
             <p className="text-muted small">
-              &copy; 2023 Ubumuntu Clinic Cancer Prediction System<br />
+              &copy; 2025 Ubumuntu Clinic Cancer Prediction System<br />
               University of Kigali
             </p>
           </div>
