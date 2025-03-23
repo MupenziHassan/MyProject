@@ -58,10 +58,10 @@ const MainLayout = ({ navItems, navColor, brandText, rolePrefix }) => {
 
       <footer className="mt-5 py-3 bg-light text-center">
         <Container>
-          <p className="mb-0 text-muted">© 2023 Ubumuntu Cancer Prediction System - University of Kigali</p>
+          <p className="mb-0 text-muted">© 2025 Ubumuntu Cancer Prediction System - University of Kigali</p>
         </Container>
       </footer>
-      
+    
       <style jsx="true">{`
         .dashboard-stat-card {
           border: none;
