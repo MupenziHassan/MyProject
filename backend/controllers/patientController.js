@@ -1,4 +1,4 @@
-const Patient = require('../models/Patient');
+const Patient = require('../src/models/Patient');
 const User = require('../models/User');
 const HealthRecord = require('../models/HealthRecord');
 const Prediction = require('../models/Prediction');
@@ -155,5 +155,25 @@ exports.getHealthDashboard = async (req, res) => {
       success: false,
       error: 'Server error fetching health dashboard'
     });
+  }
+};
+
+// Add the missing function for test results
+exports.getPatientTestResults = async (req, res, next) => {
+  try {
+    const TestResult = require('../models/TestResult');
+    
+    const testResults = await TestResult.find({ patient: req.user.id })
+      .sort({ reportDate: -1 })
+      .populate('test', 'name category')
+      .populate('doctor', 'name');
+
+    res.status(200).json({
+      success: true,
+      count: testResults.length,
+      data: testResults
+    });
+  } catch (err) {
+    next(err);
   }
 };

@@ -50,8 +50,13 @@ const Register = () => {
       
       console.log('Registering with data:', userData);
       
-      // Direct axios request with error handling
-      const response = await axios.post('/api/v1/auth/register', userData);
+      // Updated axios request with proper error handling for non-JSON responses
+      const response = await axios.post('/api/v1/auth/register', userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
       
       console.log('Registration response:', response.data);
       
@@ -67,7 +72,20 @@ const Register = () => {
       
       if (err.response) {
         // Server responded with error
-        setError(err.response.data?.error || 'Registration failed: ' + (err.response.data?.message || err.message));
+        try {
+          // Try to parse the error response as JSON
+          const errorData = err.response.data;
+          setError(errorData.error || 'Registration failed: ' + (errorData.message || err.message));
+        } catch (parseError) {
+          // If response is not JSON, handle the text
+          if (typeof err.response.data === 'string') {
+            const errorText = err.response.data;
+            console.error('Non-JSON error response:', errorText);
+            setError('Registration failed: Server returned an invalid response. Please try again later.');
+          } else {
+            setError('Registration failed: ' + err.message);
+          }
+        }
       } else if (err.request) {
         // Request made but no response
         setError('Server not responding. Please try again later.');

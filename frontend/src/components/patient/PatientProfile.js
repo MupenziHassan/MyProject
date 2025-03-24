@@ -4,7 +4,6 @@ import axios from 'axios';
 
 const PatientProfile = () => {
   const { currentUser } = useContext(AuthContext);
-  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -25,7 +24,6 @@ const PatientProfile = () => {
     const fetchPatientProfile = async () => {
       try {
         const res = await axios.get('/api/v1/patients/me');
-        setProfile(res.data.data);
         
         // Populate form data with existing profile data
         if (res.data.data) {
@@ -76,7 +74,6 @@ const PatientProfile = () => {
     
     try {
       const res = await axios.post('/api/v1/patients', formData);
-      setProfile(res.data.data);
       alert('Profile updated successfully');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update profile');

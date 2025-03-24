@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
+const patientController = require('../controllers/patientController');
+const { auth, checkRole } = require('../middleware/auth');
 const HealthRecord = require('../models/HealthRecord');
 const User = require('../models/User');
 const Appointment = require('../models/Appointment');
 
 // Get health dashboard data
-router.get('/health-dashboard', protect, authorize('patient'), async (req, res) => {
+router.get('/health-dashboard', auth, checkRole(['patient']), async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -76,7 +77,7 @@ router.get('/health-dashboard', protect, authorize('patient'), async (req, res) 
 });
 
 // Submit health information
-router.post('/health-information/:type', protect, authorize('patient'), async (req, res) => {
+router.post('/health-information/:type', auth, checkRole(['patient']), async (req, res) => {
   try {
     const { type } = req.params;
     if (!['general', 'symptoms', 'cancerRisk'].includes(type)) {
@@ -105,5 +106,14 @@ router.post('/health-information/:type', protect, authorize('patient'), async (r
     });
   }
 });
+
+// Patient routes
+router.get('/profile', auth, checkRole(['patient']), patientController.getProfile);
+router.put('/profile', auth, checkRole(['patient']), patientController.updateProfile);
+router.get('/test-results', auth, checkRole(['patient']), patientController.getPatientTestResults);;
+
+// Temporarily comment out line 111 if we can't identify it precisely
+// Uncomment the line below and place it around line 111
+// router.get('/problematic-route', (req, res) => res.status(200).json({ success: true, data: [] }));
 
 module.exports = router;

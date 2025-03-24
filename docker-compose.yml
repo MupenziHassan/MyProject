@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # MongoDB service
   mongodb:
-    image: mongo:4.4
+    image: mongo:latest
     container_name: mongodb
     restart: always
     ports:
@@ -13,6 +13,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=health-prediction-dev
     networks:
       - app-network
 
@@ -26,13 +27,17 @@ services:
     depends_on:
       - mongodb
     ports:
-      - "5000:5000"
+      - "9090:9090"
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - MONGO_URI=mongodb://mongodb:27017/health-prediction
+      - NODE_ENV=development
+      - PORT=9090
+      - MONGO_URI=mongodb://mongodb:27017/health-prediction-dev
+      - JWT_SECRET=your_jwt_secret_key_change_this_in_production
+      - JWT_EXPIRE=30d
+      - FRONTEND_URL=http://localhost:3000
     networks:
       - app-network
     command: npm run dev

@@ -75,8 +75,23 @@ const UserService = {
       throw new Error('Cannot register with test user email addresses');
     }
     
-    const response = await axios.post(`${API_URL}/auth/register`, userData);
-    return response.data;
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      // Check if the error response is not JSON
+      if (error.response && error.response.headers['content-type'] && 
+          !error.response.headers['content-type'].includes('application/json')) {
+        console.error('Non-JSON error response:', error.response.data);
+        throw new Error('Server returned an invalid response. Please try again later.');
+      }
+      throw error;
+    }
   },
   
   // Get user data - first try database, fall back to test users

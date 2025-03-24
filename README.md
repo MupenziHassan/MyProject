@@ -1,6 +1,41 @@
 # Health Prediction System
 
-A comprehensive web application for cancer risk prediction and patient management with ML integration.
+A comprehensive health prediction system that uses machine learning to predict disease risk factors.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (running locally or accessible via connection string)
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/MupenziHassan/MyProject.git
+   cd Health-prediction-system
+   ```
+
+2. Run the setup script:
+   ```
+   npm run install-all
+   ```
+
+3. Configure environment variables:
+   - Create `.env` files in both `backend` and `frontend` directories using the provided templates
+
+4. Set up the database:
+   ```
+   cd backend
+   node src/setupTestUsers.js
+   ```
+
+5. Start the application:
+   ```
+   cd ..
+   npm start
+   ```
 
 ## Overview
 
@@ -36,41 +71,6 @@ The Health Prediction System is a healthcare platform that leverages machine lea
 - **Database**: MongoDB
 - **Authentication**: JWT (JSON Web Tokens)
 - **ML Integration**: RESTful API to machine learning service
-
-## Installation
-
-### Prerequisites
-- Node.js (v14+)
-- MongoDB (v4.4+)
-- npm or yarn
-
-### Setup Instructions
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/MupenziHassan/MyProject.git
-   cd Health-prediction-system
-   ```
-
-2. Install dependencies:
-   ```
-   npm run install-all
-   ```
-
-3. Configure environment variables:
-   - Create `.env` files in both `backend` and `frontend` directories using the provided templates
-
-4. Set up the database:
-   ```
-   cd backend
-   node src/setupTestUsers.js
-   ```
-
-5. Start the application:
-   ```
-   cd ..
-   npm start
-   ```
 
 ## Usage
 

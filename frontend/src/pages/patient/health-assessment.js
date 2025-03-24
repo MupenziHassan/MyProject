@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
 
 const CancerRiskAssessment = () => {
   const navigate = useNavigate();

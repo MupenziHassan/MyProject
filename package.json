@@ -1,27 +1,35 @@
 {
-  "name": "health-prediction-system-backend",
+  "name": "health-prediction-system",
   "version": "1.0.0",
-  "description": "Backend for Health Prediction System",
-  "main": "server.js",
+  "description": "Health prediction system with ML-based risk assessment",
+  "main": "start-system.js",
   "scripts": {
-    "start": "node server.js",
-    "server": "nodemon server.js",
-    "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "start": "node start-system.js",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
-  "author": "",
+  "keywords": [
+    "health",
+    "prediction",
+    "cancer",
+    "medical"
+  ],
+  "author": "University of Kigali",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.3.5",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.0.12"
+    "mongoose": "^6.0.12",
+    "chalk": "^4.1.2"
   },
   "devDependencies": {
-    "concurrently": "^6.3.0",
+    "concurrently": "^8.0.1",
     "nodemon": "^2.0.14"
   }
 }

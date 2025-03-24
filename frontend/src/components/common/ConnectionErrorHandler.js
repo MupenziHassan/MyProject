@@ -1,278 +1,250 @@
 import React, { useState, useEffect } from 'react';
-import apiService from '../../utils/apiConfig';
-import { getServerStartInstructions } from '../../utils/serverStatus';
-import ServerConnectionTest from './ServerConnectionTest';
+import apiConnection from '../../utils/apiConnection';
 
-const ConnectionErrorHandler = ({ children }) => {
-  const [connectionState, setConnectionState] = useState({
-    isChecking: true,
-    isConnected: false,
-    error: null,
-    apiUrl: null,
-    retryCount: 0,
-    showInstructions: false,
-  });
-
-  const checkConnection = async () => {
-    try {
-      setConnectionState(prev => ({ 
-        ...prev, 
-        isChecking: true 
-      }));
-
-      // Get the current API URL
-      const apiUrl = apiService.defaults.baseURL;
-      
-      // Try to connect to the server
-      const healthStatus = await apiService.checkHealth();
-      
-      if (healthStatus.running) {
-        setConnectionState({
-          isChecking: false,
-          isConnected: true,
-          error: null,
-          apiUrl,
-          retryCount: 0,
-          showInstructions: false
-        });
-      } else {
-        setConnectionState(prev => ({
-          isChecking: false,
-          isConnected: false,
-          error: healthStatus.message || 'Could not connect to the server',
-          apiUrl,
-          retryCount: prev.retryCount + 1,
-          showInstructions: false
-        }));
-      }
-    } catch (err) {
-      setConnectionState(prev => ({
-        isChecking: false,
-        isConnected: false,
-        error: err.message || 'Could not connect to the server',
-        apiUrl: apiService.defaults.baseURL,
-        retryCount: prev.retryCount + 1,
-        showInstructions: false
-      }));
-    }
-  };
+const ConnectionErrorHandler = () => {
+  const [connectionError, setConnectionError] = useState(false);
+  const [dbError, setDbError] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Check connection when component mounts
-    checkConnection();
+    // Check connection on mount but with a delay
+    const timer = setTimeout(() => {
+      checkConnection();
+    }, 1500);
     
-    // Also set up a periodic check every 30 seconds
-    const intervalId = setInterval(() => {
-      // Only auto-retry if we're not connected and not currently checking
-      if (!connectionState.isConnected && !connectionState.isChecking) {
-        checkConnection();
+    // Listen for connection status changes
+    window.addEventListener('api-connection-changed', handleConnectionChange);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('api-connection-changed', handleConnectionChange);
+    };
+  }, []);
+  
+  // Only show error container after we confirm there's an issue
+  useEffect(() => {
+    if (connectionError || dbError) {
+      // Only make visible if actually needed
+      setIsVisible(true);
+    }
+  }, [connectionError, dbError]);
+  
+  const handleConnectionChange = (event) => {
+    setConnectionError(!event.detail.connected);
+    
+    // If connected, check database status
+    if (event.detail.connected) {
+      const dbStatus = apiConnection.getDatabaseStatus();
+      setDbError(dbStatus !== 'connected');
+    }
+  };
+  
+  const checkConnection = async () => {
+    try {
+      const healthCheck = await apiConnection.checkHealth();
+      setConnectionError(!healthCheck.connected);
+      setDbError(healthCheck.database !== 'connected');
+    } catch (error) {
+      // Don't automatically show errors on login/registration page
+      const isLoginPage = window.location.pathname === '/login' || 
+                          window.location.pathname === '/register' ||
+                          window.location.pathname === '/';
+                          
+      if (!isLoginPage) {
+        setConnectionError(true);
+        setDbError(true);
       }
-    }, 30000);
+    }
+  };
+  
+  const handleRetry = async () => {
+    setRetrying(true);
     
-    return () => clearInterval(intervalId);
-  }, [connectionState.isConnected, connectionState.isChecking]); // Add missing dependencies
-
-  const handleRetry = () => {
-    checkConnection();
+    try {
+      await apiConnection.initConnection();
+      await checkConnection();
+    } catch (error) {
+      console.warn('Retry failed:', error);
+    } finally {
+      setRetrying(false);
+    }
   };
-
-  const handleToggleInstructions = () => {
-    setConnectionState(prev => ({
-      ...prev,
-      showInstructions: !prev.showInstructions
-    }));
+  
+  const getServerStartInstructions = () => {
+    const isWindows = navigator.platform.toLowerCase().includes('win');
+    
+    if (isWindows) {
+      return [
+        '1. Open Command Prompt as Administrator',
+        '2. Navigate to the project directory: cd path\\to\\Health-prediction-system',
+        '3. Start the backend: cd backend && npm start',
+        '4. Wait for "Server running on port XXXX" message'
+      ];
+    } else {
+      return [
+        '1. Open Terminal',
+        '2. Navigate to the project directory: cd path/to/Health-prediction-system',
+        '3. Start the backend: cd backend && npm start',
+        '4. Wait for "Server running on port XXXX" message'
+      ];
+    }
   };
-
-  const handleConnectionSuccess = (port) => {
-    setConnectionState({
-      isChecking: false,
-      isConnected: true,
-      error: null,
-      apiUrl: `http://localhost:${port}`,
-      retryCount: 0,
-      showInstructions: false
-    });
-  };
-
-  // If still checking or connection is successful, render children
-  if (connectionState.isChecking) {
-    return (
-      <div className="connection-checking">
-        <div className="connection-spinner"></div>
-        <h3>Connecting to server...</h3>
-      </div>
-    );
+  
+  // Don't render anything if on login/register page or if no errors detected
+  if ((!connectionError && !dbError) || !isVisible) {
+    return null;
   }
-
-  // If connected, render the children
-  if (connectionState.isConnected) {
-    return children;
-  }
-
-  // If not connected, show error message
+  
   return (
     <div className="connection-error-container">
-      <div className="connection-error-box">
-        <div className="error-icon">
-          <i className="fas fa-exclamation-triangle"></i>
+      <div className="connection-error-dialog">
+        <div className="error-status">
+          <div className={`status-indicator ${connectionError ? 'offline' : 'online'}`}></div>
+          <div className="status-text">
+            {connectionError ? 'Server Offline' : 'Server Online'}
+          </div>
         </div>
         
-        <h2>Server Connection Error</h2>
+        {!connectionError && dbError && (
+          <div className="status-message">
+            <strong>Database Connection Issue:</strong> The server is running, but 
+            cannot connect to the database. Please check your MongoDB connection.
+          </div>
+        )}
         
-        <div className="error-message">
-          <p>{connectionState.error}</p>
-          <p>Tried connecting to: <code>{connectionState.apiUrl}</code></p>
-        </div>
+        {connectionError && (
+          <div className="status-message">
+            <strong>Server Connection Error:</strong> Cannot connect to the API server. 
+            The server might not be running or there might be a network issue.
+          </div>
+        )}
         
-        <div className="action-buttons">
+        <div className="status-actions">
           <button 
-            className="retry-button"
+            className="retry-button" 
             onClick={handleRetry}
-            disabled={connectionState.isChecking}
+            disabled={retrying}
           >
-            {connectionState.isChecking ? 'Connecting...' : 'Retry Connection'}
+            {retrying ? 'Retrying...' : 'Retry Connection'}
           </button>
           
           <button 
-            className="instructions-button"
-            onClick={handleToggleInstructions}
+            className="instructions-toggle"
+            onClick={() => setShowInstructions(!showInstructions)}
           >
-            {connectionState.showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+            {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+          </button>
+          
+          <button
+            className="close-button"
+            onClick={() => setIsVisible(false)}
+          >
+            Dismiss
           </button>
         </div>
         
-        {connectionState.showInstructions && (
-          <div className="server-instructions">
+        {showInstructions && (
+          <div className="start-instructions">
             <h4>How to start the server:</h4>
             <ol>
               {getServerStartInstructions().map((instruction, index) => (
                 <li key={index}>{instruction}</li>
               ))}
             </ol>
-            <p><strong>Quick Start:</strong> Use the <code>start-project.bat</code> file in the project root directory.</p>
           </div>
         )}
-
-        <ServerConnectionTest onConnectionSuccess={handleConnectionSuccess} />
       </div>
       
       <style jsx="true">{`
         .connection-error-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          background-color: #f8f9fa;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          z-index: 9999;
+          max-width: 400px;
         }
-        
-        .connection-error-box {
-          background: white;
+        .connection-error-dialog {
+          background-color: white;
           border-radius: 8px;
-          box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-          padding: 30px;
-          width: 100%;
-          max-width: 600px;
-          text-align: center;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 16px;
+          border-left: 4px solid #f87171;
         }
-        
-        .error-icon {
-          font-size: 48px;
-          color: #e74c3c;
-          margin-bottom: 20px;
-        }
-        
-        h2 {
-          color: #333;
-          margin-bottom: 20px;
-        }
-        
-        .error-message {
-          margin-bottom: 20px;
-          color: #555;
-        }
-        
-        .error-message code {
-          background: #f8f9fa;
-          padding: 3px 6px;
-          border-radius: 4px;
-          font-family: monospace;
-        }
-        
-        .action-buttons {
+        .error-status {
           display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 25px;
+          align-items: center;
+          margin-bottom: 10px;
         }
-        
-        .retry-button, .instructions-button {
-          padding: 10px 20px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
+        .status-indicator {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          margin-right: 8px;
+        }
+        .online {
+          background-color: #34d399;
+        }
+        .offline {
+          background-color: #f87171;
+        }
+        .status-text {
           font-weight: 500;
-          transition: background-color 0.2s;
         }
-        
+        .status-message {
+          margin-top: 5px;
+          font-size: 14px;
+        }
+        .status-actions {
+          margin-top: 10px;
+          display: flex;
+          gap: 8px;
+        }
+        .retry-button, .instructions-toggle {
+          padding: 6px 10px;
+          font-size: 12px;
+          border-radius: 4px;
+          border: none;
+          cursor: pointer;
+        }
         .retry-button {
-          background-color: #3498db;
+          background-color: #3b82f6;
           color: white;
         }
-        
-        .retry-button:hover {
-          background-color: #2980b9;
+        .retry-button:disabled {
+          background-color: #93c5fd;
+          cursor: not-allowed;
         }
-        
-        .instructions-button {
-          background-color: #f0f0f0;
-          color: #333;
+        .instructions-toggle {
+          background-color: #f3f4f6;
+          border: 1px solid #d1d5db;
         }
-        
-        .instructions-button:hover {
-          background-color: #e0e0e0;
+        .close-button {
+          background-color: #f3f4f6;
+          border: 1px solid #d1d5db;
+          padding: 6px 10px;
+          font-size: 12px;
+          border-radius: 4px;
+          cursor: pointer;
         }
-        
-        .server-instructions {
-          background-color: #f8f9fa;
-          border-radius: 6px;
-          padding: 15px;
-          text-align: left;
-          margin-bottom: 20px;
+        .start-instructions {
+          margin-top: 10px;
+          padding: 10px;
+          background-color: #f9fafb;
+          border-radius: 4px;
+          font-size: 14px;
         }
-        
-        .server-instructions h4 {
+        .start-instructions h4 {
           margin-top: 0;
-        }
-        
-        .server-instructions ol {
-          padding-left: 20px;
-        }
-        
-        .server-instructions li {
           margin-bottom: 8px;
         }
-        
-        .connection-checking {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
+        .start-instructions ol {
+          margin: 0;
+          padding-left: 20px;
         }
-        
-        .connection-spinner {
-          border: 4px solid #f3f3f3;
-          border-top: 4px solid #3498db;
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          animation: spin 1s linear infinite;
-          margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+        .start-instructions li {
+          margin-bottom: 5px;
         }
       `}</style>
     </div>

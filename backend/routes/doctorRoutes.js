@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const doctorController = require('../controllers/doctorController');
+// Fix the import to properly destructure auth and checkRole
 const { auth, checkRole } = require('../middleware/auth');
-const Assessment = require('../models/Assessment');
-const Patient = require('../models/User');
-const Notification = require('../models/Notification');
 
-// ...existing code...
+// Doctor routes
+router.get('/profile', auth, checkRole(['doctor']), doctorController.getProfile);
+router.put('/profile', auth, checkRole(['doctor']), doctorController.updateProfile);
+
+// Patient management
+router.get('/patients', auth, checkRole(['doctor']), doctorController.getPatients);
+router.post('/patients', auth, checkRole(['doctor']), doctorController.createPatient);
+router.get('/patients/:id', auth, checkRole(['doctor']), doctorController.getPatient);
 
 // Create a new assessment for a patient
 router.post('/assessments', auth, checkRole(['doctor']), async (req, res) => {
@@ -89,7 +95,5 @@ router.get('/assessments', auth, checkRole(['doctor']), async (req, res) => {
     });
   }
 });
-
-// ...existing code...
 
 module.exports = router;

@@ -1,35 +1,39 @@
 {
   "name": "health-prediction-system-backend",
   "version": "1.0.0",
-  "description": "Backend API for Health Prediction System",
+  "description": "Backend for Health Prediction System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node src/seeder.js"
+    "db:init": "node src/database/initDatabase.js",
+    "db:test": "node src/testDbConnection.js",
+    "db:list": "node src/database/adminUtils.js list",
+    "db:backup": "node src/database/adminUtils.js backup",
+    "db:clear": "node src/database/adminUtils.js clear",
+    "db:init-all": "node src/database/initAllModels.js",
+    "db:seed": "node src/database/seedUsers.js",
+    "db:import-records": "node src/database/importMedicalRecords.js",
+    "db:migrate-mock": "node src/database/migrateMockData.js",
+    "db:manager": "node src/database/dataManager.js",
+    "db:sample-data": "node src/database/createSampleData.js",
+    "db:export-csv": "node src/database/exportToCsv.js",
+    "db:backup-all": "node src/database/backupDatabase.js",
+    "create:users": "node src/setupUsers.js",
+    "create:admin": "node src/createAdmin.js",
+    "db:create-indexes": "node src/database/createIndexes.js"
   },
   "dependencies": {
-    "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
-    "colors": "^1.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.1.4",
-    "fs": "^0.0.1-security",
-    "handlebars": "^4.7.8",
-    "helmet": "^7.1.0",
-    "hpp": "^0.2.3",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.12.1",
-    "morgan": "^1.10.0",
-    "nodemailer": "^6.10.0",
-    "path": "^0.12.7",
-    "twilio": "^4.19.0",
-    "xss": "^1.0.15"
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "json2csv": "^5.0.7",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.3",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^2.0.22"
   }
 }

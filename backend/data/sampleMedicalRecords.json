@@ -1,0 +1,411 @@
+[
+  {
+    "patientEmail": "john.smith@example.com",
+    "doctorEmail": "sarah.johnson@example.com",
+    "visitDate": "2023-06-15T10:30:00Z",
+    "recordType": "general_checkup",
+    "chiefComplaint": "Annual physical examination",
+    "vitalSigns": {
+      "temperature": {
+        "value": 36.8,
+        "unit": "celsius"
+      },
+      "bloodPressure": {
+        "systolic": 122,
+        "diastolic": 78,
+        "unit": "mmHg"
+      },
+      "heartRate": {
+        "value": 72,
+        "unit": "bpm"
+      },
+      "respiratoryRate": {
+        "value": 16,
+        "unit": "bpm"
+      },
+      "oxygenSaturation": {
+        "value": 98,
+        "unit": "%"
+      },
+      "weight": {
+        "value": 80.5,
+        "unit": "kg"
+      },
+      "height": {
+        "value": 178,
+        "unit": "cm"
+      }
+    },
+    "diagnosis": [
+      {
+        "name": "Essential (primary) hypertension",
+        "icd10Code": "I10",
+        "type": "primary"
+      }
+    ],
+    "treatment": {
+      "medications": [
+        {
+          "name": "Lisinopril",
+          "dosage": "10mg",
+          "frequency": "Once daily",
+          "duration": "3 months"
+        }
+      ]
+    },
+    "assessment": "Patient has well-controlled hypertension. Overall health is good.",
+    "plan": "Continue current medication. Follow up in 3 months. Recommend diet modification and regular exercise.",
+    "patientInstructions": "Take medication as prescribed. Monitor blood pressure weekly. Reduce sodium intake.",
+    "followUp": {
+      "recommended": true,
+      "timeframe": "3 months",
+      "instructions": "Schedule follow-up appointment in 3 months for blood pressure check."
+    }
+  },
+  {
+    "patientEmail": "alice.johnson@example.com",
+    "doctorEmail": "michael.chen@example.com",
+    "visitDate": "2023-07-08T14:15:00Z",
+    "recordType": "specialist_visit",
+    "chiefComplaint": "Chest pain and shortness of breath",
+    "vitalSigns": {
+      "temperature": {
+        "value": 37.0,
+        "unit": "celsius"
+      },
+      "bloodPressure": {
+        "systolic": 135,
+        "diastolic": 85,
+        "unit": "mmHg"
+      },
+      "heartRate": {
+        "value": 88,
+        "unit": "bpm"
+      },
+      "respiratoryRate": {
+        "value": 20,
+        "unit": "bpm"
+      },
+      "oxygenSaturation": {
+        "value": 96,
+        "unit": "%"
+      }
+    },
+    "hpi": {
+      "onset": "2 weeks ago",
+      "duration": "Intermittent",
+      "severity": "Moderate",
+      "location": "Substernal",
+      "characterization": "Pressure-like, radiating to left arm",
+      "aggravatingFactors": ["Physical exertion", "Stress"],
+      "relievingFactors": ["Rest"]
+    },
+    "diagnosis": [
+      {
+        "name": "Angina pectoris",
+        "icd10Code": "I20.9",
+        "type": "primary"
+      }
+    ],
+    "treatment": {
+      "medications": [
+        {
+          "name": "Nitroglycerin",
+          "dosage": "0.4mg",
+          "frequency": "As needed for chest pain",
+          "instructions": "Dissolve tablet under tongue for acute chest pain"
+        },
+        {
+          "name": "Aspirin",
+          "dosage": "81mg",
+          "frequency": "Once daily",
+          "duration": "Indefinite"
+        }
+      ]
+    },
+    "labTests": [
+      {
+        "name": "Lipid Panel",
+        "date": "2023-07-08T14:30:00Z",
+        "results": {
+          "totalCholesterol": 228,
+          "ldl": 152,
+          "hdl": 42,
+          "triglycerides": 170
+        },
+        "referenceRange": "Total Cholesterol < 200 mg/dL, LDL < 100 mg/dL, HDL > 40 mg/dL, Triglycerides < 150 mg/dL",
+        "interpretation": "Elevated cholesterol and triglycerides"
+      },
+      {
+        "name": "Troponin I",
+        "date": "2023-07-08T14:30:00Z",
+        "results": {
+          "value": 0.02
+        },
+        "referenceRange": "< 0.04 ng/mL",
+        "interpretation": "Within normal limits"
+      }
+    ],
+    "imaging": [
+      {
+        "type": "ecg",
+        "date": "2023-07-08T15:00:00Z",
+        "findings": "Normal sinus rhythm. No ST-segment changes.",
+        "impressions": "Normal ECG"
+      }
+    ],
+    "assessment": "Patient has stable angina likely due to coronary artery disease, with hyperlipidemia as a contributing factor.",
+    "plan": "Start atorvastatin for hyperlipidemia. Schedule stress test. Dietary counseling.",
+    "patientInstructions": "Take medications as prescribed. Use nitroglycerin for chest pain. Call emergency services if chest pain persists > 15 minutes after nitroglycerin.",
+    "followUp": {
+      "recommended": true,
+      "timeframe": "2 weeks",
+      "instructions": "Return in 2 weeks for stress test and followup."
+    }
+  },
+  {
+    "patientEmail": "robert.davis@example.com",
+    "doctorEmail": "sarah.johnson@example.com",
+    "visitDate": "2023-08-03T11:00:00Z",
+    "recordType": "follow_up",
+    "chiefComplaint": "Follow-up for suspicious lung nodule",
+    "vitalSigns": {
+      "temperature": {
+        "value": 36.5,
+        "unit": "celsius"
+      },
+      "bloodPressure": {
+        "systolic": 130,
+        "diastolic": 82,
+        "unit": "mmHg"
+      },
+      "heartRate": {
+        "value": 76,
+        "unit": "bpm"
+      },
+      "respiratoryRate": {
+        "value": 18,
+        "unit": "bpm"
+      },
+      "oxygenSaturation": {
+        "value": 97,
+        "unit": "%"
+      }
+    },
+    "imaging": [
+      {
+        "type": "ct_scan",
+        "bodyPart": "chest",
+        "date": "2023-08-01T09:30:00Z",
+        "findings": "1.2 cm nodule in right upper lobe, unchanged from previous CT 3 months ago. No evidence of mediastinal or hilar lymphadenopathy.",
+        "impressions": "Stable pulmonary nodule, likely benign given stability over time"
+      }
+    ],
+    "assessment": "Stable pulmonary nodule, likely benign based on stability over 3 months and lack of concerning features.",
+    "plan": "Continue monitoring. Repeat CT in 6 months to ensure continued stability.",
+    "patientInstructions": "No specific actions needed at this time. Continue routine activities. Report any new respiratory symptoms.",
+    "followUp": {
+      "recommended": true,
+      "timeframe": "6 months",
+      "instructions": "Schedule follow-up CT chest in 6 months."
+    }
+  },
+  {
+    "patientEmail": "maria.garcia@example.com",
+    "doctorEmail": "emily.rodriguez@example.com",
+    "visitDate": "2023-07-25T16:00:00Z",
+    "recordType": "general_checkup",
+    "chiefComplaint": "General wellness visit",
+    "vitalSigns": {
+      "temperature": {
+        "value": 36.6,
+        "unit": "celsius"
+      },
+      "bloodPressure": {
+        "systolic": 110,
+        "diastolic": 70,
+        "unit": "mmHg"
+      },
+      "heartRate": {
+        "value": 68,
+        "unit": "bpm"
+      },
+      "respiratoryRate": {
+        "value": 14,
+        "unit": "bpm"
+      },
+      "weight": {
+        "value": 58,
+        "unit": "kg"
+      },
+      "height": {
+        "value": 160,
+        "unit": "cm"
+      }
+    },
+    "labTests": [
+      {
+        "name": "Complete Blood Count",
+        "date": "2023-07-25T16:15:00Z",
+        "results": {
+          "wbc": 5.5,
+          "rbc": 4.6,
+          "hemoglobin": 13.8,
+          "hematocrit": 41,
+          "platelets": 280
+        },
+        "interpretation": "Within normal limits"
+      },
+      {
+        "name": "Comprehensive Metabolic Panel",
+        "date": "2023-07-25T16:15:00Z",
+        "results": {
+          "glucose": 85,
+          "bun": 14,
+          "creatinine": 0.8,
+          "sodium": 140,
+          "potassium": 4.1,
+          "chloride": 102,
+          "co2": 24,
+          "calcium": 9.4,
+          "albumin": 4.2,
+          "totalProtein": 7.0,
+          "ast": 22,
+          "alt": 24,
+          "alkalinePhosphatase": 70,
+          "totalBilirubin": 0.6
+        },
+        "interpretation": "Within normal limits"
+      }
+    ],
+    "assessment": "Healthy young adult female. All laboratory values within normal limits.",
+    "plan": "Routine health maintenance. Continue healthy diet and regular exercise.",
+    "patientInstructions": "Continue current health practices. Return for annual physical next year."
+  },
+  {
+    "patientEmail": "james.wilson@example.com",
+    "doctorEmail": "michael.chen@example.com",
+    "visitDate": "2023-08-12T09:45:00Z",
+    "recordType": "emergency",
+    "chiefComplaint": "Acute onset chest pain and diaphoresis",
+    "vitalSigns": {
+      "temperature": {
+        "value": 36.9,
+        "unit": "celsius"
+      },
+      "bloodPressure": {
+        "systolic": 160,
+        "diastolic": 95,
+        "unit": "mmHg"
+      },
+      "heartRate": {
+        "value": 110,
+        "unit": "bpm"
+      },
+      "respiratoryRate": {
+        "value": 24,
+        "unit": "bpm"
+      },
+      "oxygenSaturation": {
+        "value": 92,
+        "unit": "%"
+      }
+    },
+    "hpi": {
+      "onset": "3 hours ago",
+      "duration": "Persistent",
+      "severity": "Severe",
+      "location": "Substernal",
+      "characterization": "Crushing, radiating to jaw and left arm",
+      "aggravatingFactors": ["Movement", "Deep breathing"],
+      "relievingFactors": ["None"]
+    },
+    "labTests": [
+      {
+        "name": "Troponin I",
+        "date": "2023-08-12T10:00:00Z",
+        "results": {
+          "value": 1.5
+        },
+        "referenceRange": "< 0.04 ng/mL",
+        "interpretation": "Elevated, consistent with myocardial injury",
+        "isAbnormal": true
+      },
+      {
+        "name": "CK-MB",
+        "date": "2023-08-12T10:00:00Z",
+        "results": {
+          "value": 28
+        },
+        "referenceRange": "< 5 ng/mL",
+        "interpretation": "Elevated",
+        "isAbnormal": true
+      }
+    ],
+    "imaging": [
+      {
+        "type": "ecg",
+        "date": "2023-08-12T09:50:00Z",
+        "findings": "ST-segment elevation in leads V2-V5. Q waves in leads V3-V4.",
+        "impressions": "Findings consistent with acute anterolateral myocardial infarction"
+      },
+      {
+        "type": "x-ray",
+        "bodyPart": "chest",
+        "date": "2023-08-12T10:30:00Z",
+        "findings": "Normal heart size. No pulmonary edema. No pneumothorax.",
+        "impressions": "No acute pulmonary process"
+      }
+    ],
+    "diagnosis": [
+      {
+        "name": "Acute ST-elevation myocardial infarction (STEMI)",
+        "icd10Code": "I21.3",
+        "type": "primary"
+      },
+      {
+        "name": "Essential (primary) hypertension",
+        "icd10Code": "I10",
+        "type": "secondary"
+      }
+    ],
+    "treatment": {
+      "medications": [
+        {
+          "name": "Aspirin",
+          "dosage": "325mg",
+          "frequency": "Once",
+          "instructions": "Chew immediately"
+        },
+        {
+          "name": "Clopidogrel",
+          "dosage": "600mg",
+          "frequency": "Once",
+          "instructions": "Loading dose"
+        },
+        {
+          "name": "Morphine",
+          "dosage": "4mg",
+          "frequency": "IV push",
+          "instructions": "For pain"
+        }
+      ],
+      "procedures": [
+        {
+          "name": "Percutaneous Coronary Intervention",
+          "date": "2023-08-12T11:45:00Z",
+          "notes": "Emergent cardiac catheterization with stent placement to LAD artery",
+          "outcome": "Successful revascularization"
+        }
+      ]
+    },
+    "assessment": "Acute anterior STEMI with successful primary PCI to LAD. Patient hemodynamically stable post-procedure.",
+    "plan": "ICU admission for post-STEMI monitoring. Dual antiplatelet therapy. Beta-blocker and statin to be started within 24 hours.",
+    "patientInstructions": "Strict bed rest. Report any recurrent chest pain, shortness of breath, or palpitations immediately.",
+    "followUp": {
+      "recommended": true,
+      "timeframe": "2 weeks",
+      "instructions": "Follow up with cardiology in 2 weeks"
+    }
+  }
+]
